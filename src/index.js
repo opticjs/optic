@@ -1,4 +1,3 @@
-/* @flow */
 'use strict';
 
 var createResourceClass = require('./core/createResourceClass');
@@ -7,11 +6,11 @@ var Resource = require('./core/Resource');
 var Request = require('./Request');
 var Response = require('./Response');
 
-var Soo = {
+var Optic = {
   createResourceClass: createResourceClass,
   Query: Query,
   Request: Request,
   Response: Response
 };
 
-module.exports = Soo;
+module.exports = Optic;

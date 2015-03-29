@@ -22,6 +22,39 @@ function select(list, predicate) {
 }
 
 /**
+ * Standard map higher order function.
+ */
+function map(list, transform) {
+  var mappedList = [];
+  for (var i = 0; i < list.length; i++) {
+    mappedList.push(transform(list[i]));
+  }
+  return mappedList;
+}
+
+/**
+ * Return a version of the list without the specified object.
+ */
+function without(list, withoutThis) {
+  return select(list, item => item !== withoutThis);
+}
+
+/**
+ * Invoke `fn` for each item in the enumerable.
+ */
+function each(list, fn) {
+  if (list instanceof Array) {
+    for (var i = 0; i < list.length; i++) {
+      fn(list[i], i);
+    }
+  } else {
+    for (var key in list) {
+      fn(list[key], key);
+    }
+  }
+}
+
+/**
  * Return a copy of the object extended with all the properites of the other
  * objects in the parameters.
  */
@@ -56,6 +89,18 @@ function invariant(condition, message = 'Precondition Error') {
 }
 
 /**
+ * A probably over-cautious method of detecting if a value is `undefined`. Taken from
+ * Underscore's implementation of the same method.
+ */
+function isUndefined(val) {
+  return val === void 0;
+}
+
+function isNumber(val) {
+  return typeof val === 'number';
+}
+
+/**
  * This function is intentionally left blank.
  */
 function noOp() {}
@@ -63,8 +108,13 @@ function noOp() {}
 module.exports = {
   uid: uid,
   select: select,
+  map: map,
+  without: without,
   invariant: invariant,
   noOp: noOp,
   extend: extend,
-  clone: clone
+  clone: clone,
+  each: each,
+  isUndefined: isUndefined,
+  isNumber: isNumber
 };

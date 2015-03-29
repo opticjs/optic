@@ -11,9 +11,8 @@ var Utils = require('./Utils');
  */
 function createResourceClass(config = {}, properties = {}, statics = {}) {
   class ResourceClass extends Resource {}
-
-  ResourceClass.prototype._classId = Utils.uid();
-  ResourceClass.prototype._config = config;
+  ResourceClass._classId = Utils.uid();
+  ResourceClass._config = config;
 
   // Set prototype properties
   for (var propertyName in properties) {
@@ -25,19 +24,19 @@ function createResourceClass(config = {}, properties = {}, statics = {}) {
     ResourceClass[staticName] = statics[staticName];
   }
 
-  buildDefaultQueryCreators(ResourceClass, config);
+  buildDefaultQueryCreators(ResourceClass);
   return ResourceClass;
 }
 
 
-/*
+/**
  * Create top level query creators to support calls like MyResource.all(). These are just
  * query transforms that get applied to an fresh query.
  */
-function buildDefaultQueryCreators(ResourceClass, resourceConfig) {
+function buildDefaultQueryCreators(ResourceClass) {
   for (var transformName in QueryTransforms) {
-    ResourceClass[transformName] =
-        () => QueryTransforms[transformName](new Query(resourceConfig));
+    let query = new Query(ResourceClass).config(ResourceClass._config);
+    ResourceClass[transformName] = () => QueryTransforms[transformName](query);
   }
 }
 
