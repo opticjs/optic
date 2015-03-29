@@ -1,15 +1,14 @@
 'use strict';
 
-var Query = require('./Query');
-var QueryTransforms = require('./QueryTransforms');
-var Cache = require('./Cache');
-var Resource = require('./Resource');
-var Utils = require('./Utils');
+import Query from './Query';
+import QueryTransforms from './QueryTransforms';
+import Resource from './Resource';
+import Utils from './Utils';
 
 /**
  * Create a custom subclass of Resource.
  */
-function createResourceClass(config = {}, properties = {}, statics = {}) {
+export default function createResourceClass(config = {}, properties = {}, statics = {}) {
   class ResourceClass extends Resource {}
   ResourceClass._classId = Utils.uid();
   ResourceClass._config = config;
@@ -39,5 +38,3 @@ function buildDefaultQueryCreators(ResourceClass) {
     ResourceClass[transformName] = () => QueryTransforms[transformName](query);
   }
 }
-
-module.exports = createResourceClass;

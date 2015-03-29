@@ -1,13 +1,13 @@
 'use strict';
 
-var Utils = '../core/Utils';
+import * as Utils from '../core/Utils';
 
 const SectionTypes = {
   LOCAL: 'LOCAL',
   STRING: 'STRING'
 };
 
-var URLBuilder = {
+export default {
   /**
    * Given URL options of the following format, construct a URL.
    *
@@ -30,7 +30,7 @@ var URLBuilder = {
    *     local is defined, then {/key} expands to "/keyValue", otherwise it expands to an
    *     empty string without the leading slash.
    */
-  build: (options) {
+  build(options) {
     var protocol = options.protocol ? options.protocol + '://' : '';
     var searchQueryParams = Utils.map(
       options.search,
@@ -91,5 +91,3 @@ function transformSection(section, options) {
     throw 'Missing or unrecognized section type';
   }
 }
-
-module.exports = URLBuilder;

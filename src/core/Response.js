@@ -1,13 +1,13 @@
 'use strict';
 
-var Utils = require('./Utils');
+import * as Utils from './Utils';
 
 /**
  * Responses are emitted by a query. A single query can emit multiple "temporary" responses
  * followed by one "final" response. Temporary responses are useful for communicating the
  * progress of the query to the user.
  */
-class Response {
+export default class Response {
 
   /**
    * @param {Object} [options={}]
@@ -18,7 +18,7 @@ class Response {
    *     Either a single resource or an array of resources, depending on the query type.
    */
   constructor(options = {}) {
-    Utils.invariant(Utils.isUndefined(options.status) Utils.isNumber(options.status),
+    Utils.invariant(Utils.isUndefined(options.status) || Utils.isNumber(options.status),
         'status must be either a number or undefined');
 
     this.status = options.status;

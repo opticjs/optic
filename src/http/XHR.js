@@ -1,6 +1,6 @@
 'use strict';
 
-var Methods = {
+export var Methods = {
   GET: 'GET',
   PUT: 'PUT',
   POST: 'POST',
@@ -8,9 +8,5 @@ var Methods = {
   HEAD: 'HEAD'
 }
 
-class XHR {
+export class XHR {
 }
-
-XHR.Methods = Methods;
-
-module.exports = XHR;

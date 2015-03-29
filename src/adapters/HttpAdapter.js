@@ -1,10 +1,10 @@
 'use strict';
 
-var Adapter = require('../core/Adapter');
-var HttpRequest = require('../http/HttpRequest');
-var HttpResponse = require('../http/HttpResponse');
-var Response = require('../core/Response');
-var URLBuilder = require('../utils/URLBuilder');
+import Adapter from '../core/Adapter';
+import HttpRequest from '../http/HttpRequest';
+import HttpResponse from '../http/HttpResponse';
+import Response from '../core/Response';
+import URLBuilder from '../utils/URLBuilder';
 
 const availableOptions = {
   url: {},
@@ -13,7 +13,7 @@ const availableOptions = {
   parseParams: (httpResponse, query) => {}
 };
 
-class HttpAdapter extends Adapter {
+export default class HttpAdapter extends Adapter {
   constructor(options) {
     this._construct(availableOptions, options);
   }
@@ -101,5 +101,3 @@ function defaultDataParser(httpResponse, query) {
       transform = o => new ResourceClass(o);
   return Utils.isArray(data) ? Utils.map(data, transform) : transform(data);
 }
-
-module.exports = HttpAdapter;

@@ -1,16 +1,18 @@
 'use strict';
 
-var createResourceClass = require('./core/createResourceClass');
-var Query = require('./core/Query');
-var Resource = require('./core/Resource');
-var Request = require('./Request');
-var Response = require('./Response');
+import createResourceClass from './core/createResourceClass';
+import HttpAdapter from './adapters/HttpAdapter';
+import Query from './core/Query';
+import Resource from './core/Resource';
+import Response from './core/Response';
 
-var Optic = {
+// import Query from './core/Query';
+
+export default {
   createResourceClass: createResourceClass,
   Query: Query,
-  Request: Request,
-  Response: Response
+  Response: Response,
+  HttpAdapter: HttpAdapter
 };
 
-module.exports = Optic;
+// module.exports = Optic;

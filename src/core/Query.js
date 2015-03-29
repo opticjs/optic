@@ -1,11 +1,7 @@
-'use strict';
-
-var OpticObject = require('./OpticObject');
-var QueryTransforms = require('./QueryTransforms');
-var Request = require('./Request');
-var Resource = require('./Resource');
-var Response = require('./Response');
-var Utils = require('./Utils');
+import OpticObject from './OpticObject';
+import Resource from './Resource';
+import Reponse from './Response';
+import * as Utils from './Utils';
 
 const States = {
   IDLE: 'idle',
@@ -14,6 +10,7 @@ const States = {
   CANCELED: 'canceled'
 };
 
+const mergeFilterDefaults = filter => Utils.extend(filterDefaults, filter);
 const availableOptions = {
   action: null,
   params: null,
@@ -29,7 +26,6 @@ const availableOptions = {
   config: {}
 };
 
-const mergeFilterDefaults = filter => Utils.extend(filterDefaults, filter);
 const filterDefaults = {
   from: null,
   to: null,
@@ -37,7 +33,7 @@ const filterDefaults = {
   filter: (query, cb) => cb()
 };
 
-class Query extends OpticObject {
+export default class Query extends OpticObject {
   constructor(ResourceClass, options = {}) {
     this._ResourceClass = ResourceClass;
     this._construct(availableOptions, options);
@@ -163,4 +159,3 @@ function performSubmission(query, callback) {
 }
 
 Query.States = States;
-module.exports = Query;

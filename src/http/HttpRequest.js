@@ -1,11 +1,9 @@
 'use strict';
 
-var Utils = require('../core/utils');
-var XHR = require('./XHR');
+import * as Utils from '../core/Utils';
+import {XHR, Methods} from './XHR';
 
-var Methods = XHR.Methods;
-
-class Request {
+export default class Request {
   constructor() {
     this._id = Utils.uid();
     this._xhr = new XHR();
@@ -47,5 +45,3 @@ class Request {
   submit() {
   }
 }
-
-module.exports = Request;

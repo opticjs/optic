@@ -1,6 +1,6 @@
 'use strict';
 
-class Resource {
+export default class Resource {
   constructor(attributes) {
     this._attributes = attributes;
   }
@@ -9,5 +9,3 @@ class Resource {
     return this._attributes[key];
   }
 }
-
-module.exports = Resource;

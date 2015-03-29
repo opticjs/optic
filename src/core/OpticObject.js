@@ -1,8 +1,8 @@
 'use strict';
 
-var Utils = require('./Utils');
+import * as Utils from './Utils';
 
-class OpticObject {
+export default class OpticObject {
   _construct(defaults, options) {
     Utils.each(defaults, (defaultVal, key) => {
       this['_' + key] = Utils.isUndefined(options[key]) ? defaultVal : options[key];

@@ -1,6 +1,4 @@
 'use strict';
 
-class Response {
+export default class Response {
 }
-
-module.exports = Response;
