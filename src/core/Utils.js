@@ -32,6 +32,11 @@ export function map(list, transform) {
   return mappedList;
 }
 
+export function reduce(list, fn, memo) {
+  return list.length === 0 ? memo :
+      fn(reduce(list.slice(0, list.length - 1), fn, memo), list[list.length - 1]);
+}
+
 /**
  * Return a version of the list without the specified object.
  */
@@ -60,13 +65,23 @@ export function each(list, fn) {
  */
 export function extend(obj) {
   var extensions = Array.prototype.slice.call(arguments, 1);
-    if (extensions.length === 1) {
+  if (extensions.length === 1) {
     let o = clone(obj);
-    for (var key in extensions[0]) {o[key] = extensions[0][key];}
+    for (var key in extensions[0]) {
+      o[key] = extensions[0][key];
+    }
     return o;
   } else {
     return extend(obj, extend(extensions[0], extensions.slice(1)));
   }
+}
+
+export function merge(objects) {
+  return extend.apply(objects[0], objects.slice(1));
+}
+
+export function contains(arr, val) {
+  return arr.indexOf(val) !== -1;
 }
 
 /**
@@ -81,12 +96,19 @@ export function clone(obj) {
 /**
  * Throw an error with an optional error message if the condition isn't true.
  */
-export function invariant(condition, message = 'Precondition Error') {
+export function assert(condition, message = 'Precondition Error') {
   if (!condition) {
     var error = new Error(message);
     error.framesToPop = 1;
     throw error;
   }
+}
+
+/**
+ * Returns a list of keys in the supplied object.
+ */
+export function keys(obj) {
+  return map(obj, (val, key) => key);
 }
 
 /**
@@ -99,6 +121,18 @@ export function isUndefined(val) {
 
 export function isNumber(val) {
   return typeof val === 'number';
+}
+
+export function isString(val) {
+  return typeof val === 'string';
+}
+
+export function isObject(val) {
+  return typeof val === 'object';
+}
+
+export function isFunction(val) {
+  return typeof val === 'function';
 }
 
 /**

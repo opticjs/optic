@@ -19,7 +19,7 @@ export default class HttpAdapter extends Adapter {
   }
 
   create(query, callback) {
-    var request = HttpRequest
+    var request = new HttpRequest()
         .post(this._buildURL(query))
         .headers(this._headers)
         .data(query.getData());
@@ -34,7 +34,7 @@ export default class HttpAdapter extends Adapter {
   }
 
   update(query, callback) {
-    var request = HttpRequest
+    var request = new HttpRequest()
         .put(this._buildURL(query))
         .headers(this._headers)
         .data(query.getData());
@@ -49,8 +49,8 @@ export default class HttpAdapter extends Adapter {
   }
 
   remove(query, callback) {
-    var request = HttpRequest
-        .delete(this._buildURL(query))
+    var request = new HttpRequest()
+        .del(this._buildURL(query))
         .headers(this._headers)
         .data(query.getData());
 
@@ -63,7 +63,7 @@ export default class HttpAdapter extends Adapter {
   }
 
   fetch(query, callback) {
-    var request = HttpRequest
+    var request = new HttpRequest()
         .get(this._buildURL(query))
         .headers(this._headers)
         .data(query.getData());
@@ -87,7 +87,8 @@ function send(request, queryCallback, success) {
   try {
     request.send(cb);
   } catch (e) {
-    if (e instanceof HttpRequest.Error) {
+    if (e instanceof HttpRequest.HttpRequestError) {
+      console.error(e);
       queryCallback(new Response({status: Response.ERROR}));
     } else {
       throw e;

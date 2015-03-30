@@ -1,13 +1,14 @@
 'use strict';
 
 import * as Utils from './Utils';
+import OpticObject from './OpticObject';
 
 /**
  * Responses are emitted by a query. A single query can emit multiple "temporary" responses
  * followed by one "final" response. Temporary responses are useful for communicating the
  * progress of the query to the user.
  */
-export default class Response {
+export default OpticObject.extend({
 
   /**
    * @param {Object} [options={}]
@@ -18,7 +19,7 @@ export default class Response {
    *     Either a single resource or an array of resources, depending on the query type.
    */
   constructor(options = {}) {
-    Utils.invariant(Utils.isUndefined(options.status) || Utils.isNumber(options.status),
+    Utils.assert(Utils.isUndefined(options.status) || Utils.isNumber(options.status),
         'status must be either a number or undefined');
 
     this.status = options.status;
@@ -45,7 +46,7 @@ export default class Response {
   isSuccessful() {
     return Utils.isNumber(this.status) && this.status >= 200 && this.status < 300;
   }
-}
+});
 
 Response.OK = 200;
 Response.ERROR = 0;

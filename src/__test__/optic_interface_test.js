@@ -3,7 +3,7 @@ import Optic from '../index';
 import Query from '../core/Query';
 import Response from '../core/Response'
 
-describe('Optic', function() {
+describe('Optic Interface', function() {
   it('should expose Optic.Response', function() {
     expect(Optic.Response).toEqual(Response);
   });

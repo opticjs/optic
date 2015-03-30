@@ -33,7 +33,7 @@ const filterDefaults = {
   filter: (query, cb) => cb()
 };
 
-export default class Query extends OpticObject {
+export default OpticObject.extend({
   constructor(ResourceClass, options = {}) {
     this._ResourceClass = ResourceClass;
     this._construct(availableOptions, options);
@@ -49,7 +49,7 @@ export default class Query extends OpticObject {
   }
 
   submit(done) {
-    Utils.invariant(this._state === States.IDLE,
+    Utils.assert(this._state === States.IDLE,
         'A query can only submitted from the IDLE state');
     startStateTransitionTo(this, States.STARTING_SUBMISSION, done);
   }
@@ -73,7 +73,7 @@ export default class Query extends OpticObject {
   getResourceConfig() {
     return this._ResourceClass._config;
   }
-}
+}, {States: States});
 
 /**
  * The submission filter defines the default behavior of a query and it cannot be removed.
@@ -157,5 +157,3 @@ function performSubmission(query, callback) {
     query._adapter.submit(query, callback);
   }
 }
-
-Query.States = States;
