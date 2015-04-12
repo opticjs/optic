@@ -25,7 +25,7 @@ export default OpticObject.extend({
     this.status = options.status;
     this.params = options.params;
     this.data = options.data;
-  }
+  },
 
   /**
    * If there is no status, then this response is temporary and another response can be
@@ -35,7 +35,7 @@ export default OpticObject.extend({
    */
   isFinal() {
     return !Utils.isUndefined(this.status);
-  }
+  },
 
   /**
    * A response is successful if it has a 2xx status code. This method always returns false
@@ -46,8 +46,4 @@ export default OpticObject.extend({
   isSuccessful() {
     return Utils.isNumber(this.status) && this.status >= 200 && this.status < 300;
   }
-});
-
-Response.OK = 200;
-Response.ERROR = 0;
-module.exports = Response;
+}, {OK: 200, ERROR: 0});

@@ -1,15 +1,14 @@
 'use strict';
 
 import Query from './Query';
-import QueryTransforms from './QueryTransforms';
-import Resource from './Resource';
-import Utils from './Utils';
+import * as QueryTransforms from './QueryTransforms';
+import * as Utils from './Utils';
 
 /**
  * Create a custom subclass of Resource.
  */
 export default function createResourceClass(config = {}, properties = {}, statics = {}) {
-  class ResourceClass extends Resource {}
+  var ResourceClass = Resource.extend({});
   ResourceClass._classId = Utils.uid();
   ResourceClass._config = config;
 

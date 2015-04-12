@@ -1,4 +1,4 @@
-import createResourceClass from '../core/createResourceClass';
+import Resource from '../core/Resource';
 import Optic from '../index';
 import Query from '../core/Query';
 import Response from '../core/Response'
@@ -12,7 +12,7 @@ describe('Optic Interface', function() {
     expect(Optic.Query).toEqual(Query);
   });
 
-  it('should expose Optic.createResourceClass', function() {
-    expect(Optic.createResourceClass).toEqual(createResourceClass);
+  it('should expose Optic.Resource', function() {
+    expect(Optic.Resource).toEqual(Resource);
   });
 });

@@ -1,6 +1,6 @@
 import OpticObject from './OpticObject';
-import Resource from './Resource';
 import Reponse from './Response';
+import * as QueryTransforms from './QueryTransforms';
 import * as Utils from './Utils';
 
 const States = {
@@ -16,7 +16,7 @@ const availableOptions = {
   params: null,
   data: null,
   parent: null,
-  state: null,
+  state: States.IDLE,
   adapter: null,
   inboundFilters: [mergeFilterDefaults(submissionFilter)],
   outboundFilters: [],
@@ -33,11 +33,12 @@ const filterDefaults = {
   filter: (query, cb) => cb()
 };
 
-export default OpticObject.extend({
-  constructor(ResourceClass, options = {}) {
+export default OpticObject.extend(Utils.extend(getQueryTransforms(), {
+  init(ResourceClass, options = {}) {
     this._ResourceClass = ResourceClass;
-    this._construct(availableOptions, options);
-  }
+    this._constructOptions(availableOptions, options);
+    this._super();
+  },
 
   /**
    * Creates a new query that resembles the attributes of this one however some fields
@@ -46,34 +47,54 @@ export default OpticObject.extend({
    */
   copy() {
     return new Query(this._ResourceClass, this._deconstruct(availableOptions));
-  }
+  },
 
   submit(done) {
     Utils.assert(this._state === States.IDLE,
-        'A query can only submitted from the IDLE state');
+        'A query can only be submitted from the IDLE state');
     startStateTransitionTo(this, States.STARTING_SUBMISSION, done);
-  }
+  },
 
   getParams() {
     return this._params;
-  }
+  },
 
   getData() {
     return this._data;
-  }
+  },
 
   getAction() {
     return this._action;
-  }
+  },
 
   getResourceClass() {
     return this._ResourceClass;
-  }
+  },
 
   getResourceConfig() {
     return this._ResourceClass._config;
+  },
+
+  getOutboundFilters() {
+    return this._outboundFilters;
+  },
+
+  getInboundFilters() {
+    return this._inboundFilters;
   }
-}, {States: States});
+}), {States: States});
+
+/**
+ * Returns all the functions defined in QueryTransforms with the context bound to the
+ * first argument.
+ */
+function getQueryTransforms() {
+  return Utils.reduce(Utils.keys(QueryTransforms), (memo, name) => Utils.extend(memo, {
+    [name]: function() {
+      return QueryTransforms[name].apply(null, [this].concat(arguments));
+    }
+  }), {});
+}
 
 /**
  * The submission filter defines the default behavior of a query and it cannot be removed.

@@ -2,29 +2,38 @@
 
 import OpticObject from './OpticObject';
 import Query from './Query';
-import QueryTransforms from './QueryTransforms';
-import Utils from './Utils';
+import * as QueryTransforms from './QueryTransforms';
+import * as Utils from './Utils';
 
 const resourceConfigDefaults = {
+  filters: [],
+  adapter: null
 };
 
 var Resource = OpticObject.extend({
   init(attributes) {
     this._attributes = attributes;
-  }
+  },
 
   get(key) {
     return this._attributes[key];
   }
-}, {extend: extendResource});
+});
+
+Resource.extend = extendResource;
 
 /**
  * Create a custom subclass of Resource.
  */
 function extendResource(props = {}, statics = {}) {
+  statics = Utils.extend(statics, {
+    _classId: Utils.uid(),
+    _config: Utils.reduce(Utils.keys(resourceConfigDefaults), (memo, key) => Utils.extend(memo, {
+      [key]: Utils.contains(Utils.keys(props), key) ? resourceConfigDefaults[key] : props[key]
+    }), {})
+  });
+
   var ResourceClass = OpticObject.extend.call(Resource, props, statics);
-  // ResourceClass._classId = Utils.uid();
-  // ResourceClass._config = config;
   buildDefaultQueryCreators(ResourceClass);
   return ResourceClass;
 }

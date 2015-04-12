@@ -6,13 +6,9 @@ import Query from './core/Query';
 import Resource from './core/Resource';
 import Response from './core/Response';
 
-// import Query from './core/Query';
-
 export default {
-  createResourceClass: createResourceClass,
+  Resource: Resource,
   Query: Query,
   Response: Response,
   HttpAdapter: HttpAdapter
 };
-
-// module.exports = Optic;

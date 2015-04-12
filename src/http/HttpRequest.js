@@ -99,7 +99,7 @@ export default class HttpRequest {
   _computeHeaders() {
     var type = this._computeContentType();
     return Utils.extend(
-        type ? {'Content-Type': type} || {},
+        type ? {'Content-Type': type} : {},
         this._acceptType ? {'Accept': this._acceptType} : {},
         this._headers || {}
     );
@@ -124,7 +124,7 @@ export default class HttpRequest {
 
       if (this._computeContentType() === ContentTypes.json && Utils.isObject(fullData)) {
         return JSON.stringify(fullData);
-      else if (this._computeContentType() === ContentTypes.form && Utils.isObject(fullData)) {
+      } else if (this._computeContentType() === ContentTypes.form && Utils.isObject(fullData)) {
         return Utils.map(fullData, (val, key) => key + '=' + val).join('&');
       } else {
         return fullData;
@@ -139,7 +139,7 @@ export default class HttpRequest {
   }
 }
 
-class HttpRequestError extend Error {
+class HttpRequestError extends Error {
 }
 
 HttpRequest.HttpRequestError = HttpRequestError;

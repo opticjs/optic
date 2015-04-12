@@ -108,7 +108,11 @@ export function assert(condition, message = 'Precondition Error') {
  * Returns a list of keys in the supplied object.
  */
 export function keys(obj) {
-  return map(obj, (val, key) => key);
+  var keys = [];
+  for (var key in obj) {
+    keys.push(key);
+  }
+  return keys;
 }
 
 /**

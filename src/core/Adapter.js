@@ -1,6 +1,6 @@
 'use strict';
 
-var OpticObject = require('./OpticObject');
+import OpticObject from './OpticObject';
 
 var Actions = {
   CREATE: 'create',
@@ -9,15 +9,14 @@ var Actions = {
   FETCH: 'fetch'
 };
 
-class Adapter extends OpticObject {
-  constructor(options) {
-    this._options = options;
-  }
+var Adapter = OpticObject.extend({
+  init(options) {
+    this._super(options);
+  },
 
   submit(query, callback) {
     this[query._action](query, callback);
   }
-}
+}, {Actions: Actions});
 
-Adapter.Actions;
-module.exports = Adapter;
+export default Adapter;

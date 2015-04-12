@@ -2,14 +2,14 @@
   "name": "optic",
   "version": "0.0.1",
   "devDependencies": {
-    "babelify": "^5.0.4",
-    "browser-sync": "^2.4.0",
-    "browserify": "^9.0.3",
-    "glob": "^5.0.3",
-    "gulp": "^3.8.11",
-    "gulp-babel": "^4.0.0",
-    "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0",
-    "watchify": "^2.6.2"
+    "babelify": "^6.0.2",
+    "broccoli": "^0.15.3",
+    "broccoli-babel-transpiler": "^5.0.0",
+    "broccoli-cli": "^1.0.0",
+    "broccoli-concat": "0.0.13",
+    "broccoli-fast-browserify": "^0.2.5",
+    "broccoli-funnel": "^0.2.3",
+    "broccoli-merge-trees": "^0.2.1",
+    "glob": "^5.0.5"
   }
 }

@@ -13,10 +13,11 @@ const availableOptions = {
   parseParams: (httpResponse, query) => {}
 };
 
-export default class HttpAdapter extends Adapter {
-  constructor(options) {
-    this._construct(availableOptions, options);
-  }
+export default Adapter.extend({
+  init(options) {
+    this._constructOptions(availableOptions, options);
+    this._super(options);
+  },
 
   create(query, callback) {
     var request = new HttpRequest()
@@ -31,7 +32,7 @@ export default class HttpAdapter extends Adapter {
         data: this._parseData(httpResponse, query)
       }));
     });
-  }
+  },
 
   update(query, callback) {
     var request = new HttpRequest()
@@ -46,7 +47,7 @@ export default class HttpAdapter extends Adapter {
         data: this._parseData(httpResponse, query)
       }));
     });
-  }
+  },
 
   remove(query, callback) {
     var request = new HttpRequest()
@@ -60,7 +61,7 @@ export default class HttpAdapter extends Adapter {
         params: this._parseParams(httpResponse, query)
       }));
     });
-  }
+  },
 
   fetch(query, callback) {
     var request = new HttpRequest()
@@ -75,13 +76,13 @@ export default class HttpAdapter extends Adapter {
         data: this._parseData(httpResponse, query)
       }));
     });
-  }
+  },
 
   _buildURL(query) {
     var url = Utils.isFunction(url) ? url(query) : this._url;
     return Utils.isString(url) ? url : URLBuilder.build(url);
   }
-}
+});
 
 function send(request, queryCallback, success) {
   try {

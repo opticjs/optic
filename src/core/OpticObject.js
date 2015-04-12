@@ -22,8 +22,10 @@ OpticObject.prototype._deconstructOptions = defaults => Utils.reduce(
     {}
 );
 
-// Inspired by http://ejohn.org/blog/simple-javascript-inheritance/
-OpticObject.extend = function(props, statics) {
+OpticObject.prototype.init = () => {};
+
+// Inspired (copied) from http://ejohn.org/blog/simple-javascript-inheritance/
+var extend = function(props, statics) {
   var newPrototype = new this();
   var _super = this.prototype;
 
@@ -54,5 +56,8 @@ OpticObject.extend = function(props, statics) {
 
   NewClass.prototype = newPrototype;
   NewClass.prototype.constructor = NewClass;
-  NewClass.extend = arguments.callee;
+  NewClass.extend = extend;
+  return NewClass;
 };
+
+OpticObject.extend = extend;
