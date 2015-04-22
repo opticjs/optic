@@ -99,7 +99,7 @@ function send(request, queryCallback, success) {
 }
 
 function defaultDataParser(httpResponse, query) {
-  var data = httpResponse.data,
+  var data = httpResponse.body,
       ResourceClass = query.getResourceClass(),
       transform = o => new ResourceClass(o);
   return Utils.isArray(data) ? Utils.map(data, transform) : transform(data);

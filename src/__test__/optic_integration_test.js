@@ -1,12 +1,17 @@
 // import createResourceClass from '../core/createResourceClass';
 import Optic from '../index';
+import * as Utils from '../core/Utils';
 // import Query from '../core/Query';
 // import Response from '../core/Response'
 // import Resource from '../core/Resource';
 
 var Resource1 = Optic.Resource.extend({
   adapter: new Optic.HttpAdapter({
-    url: '/resource1'
+    url: '/resource1',
+    parseData: function(httpResponse, query) {
+      return Utils.map(httpResponse.body.dataField,
+          item => new Resource1(item));
+    }
   })
 });
 
@@ -36,5 +41,7 @@ describe('Optic Integration Tests', function() {
     });
 
     expect(doneFn.calls.count()).toEqual(2);
+    expect(doneFn.calls.mostRecent().args[0].data[0].get('id_')).toEqual('1234');
+    console.log(doneFn.calls.mostRecent().args[0].data[0]);
   });
 });
