@@ -5,3 +5,7 @@ clean:
 
 build: clean
 	broccoli build dist
+
+serve: clean
+	broccoli serve
+

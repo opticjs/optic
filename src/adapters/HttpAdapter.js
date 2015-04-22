@@ -5,6 +5,7 @@ import HttpRequest from '../http/HttpRequest';
 import HttpResponse from '../http/HttpResponse';
 import Response from '../core/Response';
 import URLBuilder from '../utils/URLBuilder';
+import * as Utils from '../core/Utils';
 
 const availableOptions = {
   url: {},
@@ -27,7 +28,7 @@ export default Adapter.extend({
 
     send(request, callback, httpResponse => {
       callback(new Response({
-        status: httpResponse.status,
+        status: httpResponse.statusCode,
         params: this._parseParams(httpResponse, query),
         data: this._parseData(httpResponse, query)
       }));
@@ -42,7 +43,7 @@ export default Adapter.extend({
 
     send(request, callback, httpResponse => {
       callback(new Response({
-        status: httpResponse.status,
+        status: httpResponse.statusCode,
         params: this._parseParams(httpResponse, query),
         data: this._parseData(httpResponse, query)
       }));
@@ -57,7 +58,7 @@ export default Adapter.extend({
 
     send(request, callback, httpResponse => {
       callback(new Response({
-        status: httpResponse.status,
+        status: httpResponse.statusCode,
         params: this._parseParams(httpResponse, query)
       }));
     });
@@ -71,7 +72,7 @@ export default Adapter.extend({
 
     send(request, callback, httpResponse => {
       callback(new Response({
-        status: httpResponse.status,
+        status: httpResponse.statusCode,
         params: this._parseParams(httpResponse, query),
         data: this._parseData(httpResponse, query)
       }));
@@ -86,7 +87,7 @@ export default Adapter.extend({
 
 function send(request, queryCallback, success) {
   try {
-    request.send(cb);
+    request.submit(success);
   } catch (e) {
     if (e instanceof HttpRequest.HttpRequestError) {
       console.error(e);

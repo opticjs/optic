@@ -59,6 +59,10 @@ export function each(list, fn) {
   }
 }
 
+export function last(list) {
+  return list[list.length - 1];
+}
+
 /**
  * Return a copy of the object extended with all the properites of the other
  * objects in the parameters.
@@ -82,6 +86,14 @@ export function merge(objects) {
 
 export function contains(arr, val) {
   return arr.indexOf(val) !== -1;
+}
+
+export function omit(obj, ...keysToOmit) {
+  return reduce(
+    keys(obj),
+    (memo, key) => extend(memo, contains(keysToOmit, key) ? {} : {[key]: obj[key]}),
+    {}
+  );
 }
 
 /**
@@ -137,6 +149,10 @@ export function isObject(val) {
 
 export function isFunction(val) {
   return typeof val === 'function';
+}
+
+export function isArray(val) {
+  return val instanceof Array;
 }
 
 /**

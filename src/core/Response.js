@@ -18,7 +18,7 @@ export default OpticObject.extend({
    * @param {(Resource|Resource[])} [options.data] - The main data returned by this response.
    *     Either a single resource or an array of resources, depending on the query type.
    */
-  constructor(options = {}) {
+  init(options = {}) {
     Utils.assert(Utils.isUndefined(options.status) || Utils.isNumber(options.status),
         'status must be either a number or undefined');
 

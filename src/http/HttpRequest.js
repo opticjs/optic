@@ -26,26 +26,31 @@ export default class HttpRequest {
   get(url) {
     this._method = Methods.GET;
     this._url = url;
+    return this;
   }
 
   post(url) {
     this._method = Methods.POST;
     this._url = url;
+    return this;
   }
 
   put(url) {
     this._method = Methods.PUT;
     this._url = url;
+    return this;
   }
 
   del(url) {
     this._method = Methods.PUT;
     this._url = url;
+    return this;
   }
 
   head(url) {
     this._method = Methods.PUT;
     this._url = url;
+    return this;
   }
 
   data(data) {
@@ -55,18 +60,22 @@ export default class HttpRequest {
 
     this._dataCalls = this._dataCalls || [];
     this._dataCalls.push(data);
+    return this;
   }
 
   headers(headers) {
-    this._headers = Utils.extend(this._headers || {}, data);
+    this._headers = Utils.extend(this._headers || {}, headers);
+    return this;
   }
 
   accept(acceptType) {
     this._acceptType = acceptType;
+    return this;
   }
 
   type(type) {
     this._type = ContentTypes[type] || type;
+    return this;
   }
 
   submit(callback) {

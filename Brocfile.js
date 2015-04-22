@@ -21,16 +21,12 @@ var testTree = funnel('src', {
   include: [testSuiteGlob]
 });
 
-// var testSuite = browserify(testTree, {
-//   entries: glob.sync(testSuiteGlob, {cwd: path.join(process.cwd(), 'src')}),
-//   outputFile: './test_suite.js'
-// });
-
 var testSuite = browserify('src', {
   bundles: {
     'test_suite.js': {
       transform: babelify,
-      entryPoints: glob.sync(testSuiteGlob, {cwd: path.join(process.cwd(), 'src')})
+      entryPoints: glob.sync(testSuiteGlob, {cwd: path.join(process.cwd(), 'src')}),
+      debug: true
     }
   }
 });

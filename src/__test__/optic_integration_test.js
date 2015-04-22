@@ -24,10 +24,15 @@ describe('Optic Integration Tests', function() {
     Resource1.all().submit(doneFn);
     expect(doneFn.calls.count()).toEqual(1);
 
-    jasmine.Ajax.requests.mostRecent().response({
+    jasmine.Ajax.requests.mostRecent().respondWith({
       status: 200,
       contentType: 'application/json',
-      responseText: '{"food": "bar", "foo": 5, "bool": true}'
+      responseText: `{
+        "food": "bar",
+        "foo": 5,
+        "bool": true,
+        "dataField": [{"id_": "1234", "title": "hi"}, {"id_": "13", "title": "hello"}]
+      }`
     });
 
     expect(doneFn.calls.count()).toEqual(2);

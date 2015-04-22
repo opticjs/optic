@@ -13,14 +13,16 @@ OpticObject.prototype._constructOptions = function(defaults, options) {
   });
 };
 
-OpticObject.prototype._deconstructOptions = defaults => Utils.reduce(
+OpticObject.prototype._deconstructOptions = function(defaults) {
+  return Utils.reduce(
     Utils.keys(defaults),
     (memo, key) => Utils.extend(
         memo,
         this['_' + key] === defaults[key] ? {} : {[key]: this['_' + key]}
     ),
     {}
-);
+  );
+}
 
 OpticObject.prototype.init = () => {};
 

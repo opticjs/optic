@@ -1,5 +1,5 @@
 import OpticObject from './OpticObject';
-import Reponse from './Response';
+import Response from './Response';
 import * as QueryTransforms from './QueryTransforms';
 import * as Utils from './Utils';
 
@@ -10,33 +10,42 @@ const States = {
   CANCELED: 'canceled'
 };
 
+const Scopes = {
+  ALL: 'all',
+  COMPOSITE: 'composite',
+  LEAF: 'leaf'
+};
+
 const mergeFilterDefaults = filter => Utils.extend(filterDefaults, filter);
-const availableOptions = {
-  action: null,
-  params: null,
-  data: null,
-  parent: null,
-  state: States.IDLE,
-  adapter: null,
-  inboundFilters: [mergeFilterDefaults(submissionFilter)],
-  outboundFilters: [],
-  isComposite: true,
-  rangeStart: null,
-  rangeLength: null,
-  config: {}
+const availableOptions = function() {
+  return {
+    action: null,
+    params: null,
+    data: null,
+    parent: null,
+    state: States.IDLE,
+    adapter: null,
+    inboundFilters: [mergeFilterDefaults(submissionFilter)],
+    outboundFilters: [],
+    isComposite: true,
+    rangeStart: null,
+    rangeLength: null,
+    config: {}
+  }
 };
 
 const filterDefaults = {
   from: null,
   to: null,
-  composite: false,
+  scope: Scopes.LEAF,
   filter: (query, cb) => cb()
 };
 
-export default OpticObject.extend(Utils.extend(getQueryTransforms(), {
+const Query = OpticObject.extend(Utils.extend(getQueryTransforms(), {
   init(ResourceClass, options = {}) {
     this._ResourceClass = ResourceClass;
-    this._constructOptions(availableOptions, options);
+    this._emittedResponses = [];
+    this._constructOptions(availableOptions(), options);
     this._super();
   },
 
@@ -46,13 +55,23 @@ export default OpticObject.extend(Utils.extend(getQueryTransforms(), {
    * clone function.
    */
   copy() {
-    return new Query(this._ResourceClass, this._deconstruct(availableOptions));
+    return new Query(
+      this._ResourceClass,
+      this._deconstructOptions(Utils.omit(availableOptions(), 'state'))
+    );
   },
 
-  submit(done) {
+  submit(onUpdate) {
     Utils.assert(this._state === States.IDLE,
-        'A query can only be submitted from the IDLE state');
-    startStateTransitionTo(this, States.STARTING_SUBMISSION, done);
+        'A query can only be submitted from the IDLE state.');
+
+    this._onUpdate = onUpdate;
+
+    // Response with initial temporary response before all other work starts
+    onUpdate(new Response());
+
+    // Kick off the submission by starting a transition to the SUBMITTING state
+    startStateTransitionTo(this, States.SUBMITTING);
   },
 
   getParams() {
@@ -81,6 +100,41 @@ export default OpticObject.extend(Utils.extend(getQueryTransforms(), {
 
   getInboundFilters() {
     return this._inboundFilters;
+  },
+
+  _getAdapter() {
+    return this._adapter || this._config.adapter || null;
+  },
+
+  /**
+   * Get the value of `this` to bind to filter functions. Make sure to use this method to
+   * get the context for every individual filter because of the embedded closure.
+   */
+  _getFilterContext() {
+    var query = this;
+    return {
+      emitResponse: (() => {
+        var hasEmitted = false;
+        return function(response) {
+          var responses = query._emittedResponses;
+
+          // Only allow new responses until a final response has been seen.
+          Utils.assert(responses.length === 0 || !Utils.last(responses).isFinal(), `
+              This query cannot accept responses because a final response has already
+              been emitted.
+          `);
+
+          // Discard the latest response from this filter upon a new one.
+          if (hasEmitted) {
+            responses.pop();
+          }
+
+          // Push the latest response from this filter.
+          responses.push(response);
+          hasEmitted = true;
+        }
+      })()
+    };
   }
 }), {States: States});
 
@@ -90,8 +144,8 @@ export default OpticObject.extend(Utils.extend(getQueryTransforms(), {
  */
 function getQueryTransforms() {
   return Utils.reduce(Utils.keys(QueryTransforms), (memo, name) => Utils.extend(memo, {
-    [name]: function() {
-      return QueryTransforms[name].apply(null, [this].concat(arguments));
+    [name]: function(...args) {
+      return QueryTransforms[name].apply(null, [this].concat(args));
     }
   }), {});
 }
@@ -101,18 +155,21 @@ function getQueryTransforms() {
  */
 var submissionFilter = {
   to: States.SUBMITTING,
-  filter: (query, callback) => {
-    performSubmission(query, () => callback(States.DONE));
+  scope: Scopes.ALL,
+  filter: function(query, callback) {
+    performSubmission.call(this, query, () => callback(States.DONE));
   }
 };
 
 /**
  * Change the state of the supplied query and call all necessary filters.
  */
-function startStateTransitionTo(query, state, callback) {
+function startStateTransitionTo(query, state, callback = Utils.noOp) {
   // Predicate helper to select filters that should be used for this transition.
   var predicate = f => (f.from ? f.from === query._state : true) &&
-      (f.to ? f.to === state : true) && f.composite === query._isComposite;
+      (f.to ? f.to === state : true) &&
+      (f.scope === Scopes.ALL ||
+          ((f.scope === Scopes.COMPOSITE) === query._isComposite));
 
   // If the invoked filter specifies a state to transition to, then we stop
   // processing the list of filters for the current transition and immediately
@@ -143,27 +200,43 @@ function startStateTransitionTo(query, state, callback) {
  * callback when all filters are processed.
  */
 function processFilters(query, filters, ifNewVal, callback = Utils.noOp) {
+  var initialResponsesLength = query._emittedResponses.length;
+
   if (filters.length === 0) {
     // If no more filters to process, then we are done and invoke the callback.
     callback();
   } else {
     // Otherwise we invoke the first filter.
-    filters[0](query, newVal => {
+    filters[0].filter.call(query._getFilterContext(), query, newVal => {
+      // Invoke the onUpdate function for the query if this filter emitted a response.
+      if (query._emittedResponses.length !== initialResponsesLength) {
+        Utils.assert(query._emittedResponses.length === initialResponsesLength + 1, `
+            The length of the emitted responses array after the filter has completed
+            must either be the same length as before the filter started, or greater
+            by one. This error should never happen.
+        `);
+        query._onUpdate(Utils.last(query._emittedResponses));
+      }
+
       if (newVal && ifNewVal) {
         // If the filter invokes the callback with a new value, and processFilters is
         // given a function to invoke in that situation, then do it.
         ifNewVal(newVal);
       } else {
         // Otherwise, recurse.
-        processFilters(query, filters.slice(1), callback);
+        processFilters(query, filters.slice(1), ifNewVal, callback);
       }
-    })
+    });
   }
 }
 
 /**
  * Submit the query. Compisite queries will always submit by decomposing into and submitting
  * non composite queries. Non composite queries are always submitted through the adapter.
+ * This is invoked with the context of the submission filter.
+ *
+ * @param {Query} query
+ * @param {function} callback - The callback to invoke when the submission is complete.
  */
 function performSubmission(query, callback) {
   if (query._isComposite) {
@@ -173,8 +246,18 @@ function performSubmission(query, callback) {
 
     // For now, we just submit the new query.
     // TODO: Make this support multiple sub queries, cursors, and stuff.
-    newQuery.submit();
+    newQuery.submit(response => {
+      if (response.isFinal()) {
+        this.emitResponse(response);
+        callback();
+      }
+    });
   } else {
-    query._adapter.submit(query, callback);
+    query._getAdapter().submit(query, response => {
+      this.emitResponse(response);
+      callback();
+    });
   }
 }
+
+export default Query;

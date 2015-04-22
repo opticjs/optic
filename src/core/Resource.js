@@ -29,7 +29,7 @@ function extendResource(props = {}, statics = {}) {
   statics = Utils.extend(statics, {
     _classId: Utils.uid(),
     _config: Utils.reduce(Utils.keys(resourceConfigDefaults), (memo, key) => Utils.extend(memo, {
-      [key]: Utils.contains(Utils.keys(props), key) ? resourceConfigDefaults[key] : props[key]
+      [key]: Utils.contains(Utils.keys(props), key) ? props[key] : resourceConfigDefaults[key]
     }), {})
   });
 
@@ -46,7 +46,10 @@ function extendResource(props = {}, statics = {}) {
 function buildDefaultQueryCreators(ResourceClass) {
   for (var transformName in QueryTransforms) {
     let query = new Query(ResourceClass).config(ResourceClass._config);
-    ResourceClass[transformName] = () => QueryTransforms[transformName](query);
+    (transformName => {
+      ResourceClass[transformName] = (...args) =>
+        QueryTransforms[transformName].apply(null, [query].concat(args));
+    })(transformName)
   }
 }
 
