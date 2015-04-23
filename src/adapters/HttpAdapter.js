@@ -11,7 +11,7 @@ const availableOptions = {
   url: {},
   headers: {},
   parseData: defaultDataParser,
-  parseParams: (httpResponse, query) => {}
+  parseParams: (httpResponse, query) => {{}}
 };
 
 export default Adapter.extend({

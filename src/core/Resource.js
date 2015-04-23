@@ -7,7 +7,8 @@ import * as Utils from './Utils';
 
 const resourceConfigDefaults = {
   filters: [],
-  adapter: null
+  adapter: null,
+  nextParams: null
 };
 
 var Resource = OpticObject.extend({

@@ -30,7 +30,10 @@ const availableOptions = function() {
     isComposite: true,
     rangeStart: null,
     rangeLength: null,
-    config: {}
+    config: {},
+    _statusMergeFn: (resp1, resp2) => resp2.status,
+    _paramsMergeFn: (resp1, resp2) => Utils.extend(resp1.params, resp2.params),
+    _dataMergeFn: (resp1, resp2) => resp1.data.concat(resp2.data)
   }
 };
 
@@ -102,8 +105,16 @@ const Query = OpticObject.extend(Utils.extend(getQueryTransforms(), {
     return this._inboundFilters;
   },
 
+  isRangeQuery() {
+    return !(Utils.isUndefined(this._rangeStart) && Utils.isUndefined(this._rangeLength));
+  },
+
   _getAdapter() {
     return this._adapter || this._config.adapter || null;
+  },
+
+  _getNextParams() {
+    return this._nextParams || this._config.nextParams || null;
   },
 
   /**
@@ -244,12 +255,38 @@ function performSubmission(query, callback) {
     let newQuery = query.copy();
     newQuery._isComposite = false;
 
-    // For now, we just submit the new query.
-    // TODO: Make this support multiple sub queries, cursors, and stuff.
+    // Submit the initial decomposed query.
     newQuery.submit(response => {
       if (response.isFinal()) {
+        // Always emit a new response once the initial decomposed query completes.
         this.emitResponse(response);
-        callback();
+
+        if (query.isRangeQuery() && response.isSuccessful()) {
+          // If this is a range query and the previous query was successful, then we have
+          // to check if additional queries are required to get all the requested data.
+          let remainder = query._rangeLength - response.data.length;
+          if (remainder > 0) {
+            console.log(remainder);
+            getNextQuery(query, response, remainder).submit(nextResponse => {
+              // Once the next query responds, we merge that response with the response of
+              // the first decomposed query and emit the merged response as the final one.
+              if (nextResponse.isFinal()) {
+                this.emitResponse(new Response({
+                  status: query._statusMergeFn(response, nextResponse),
+                  params: query._paramsMergeFn(response, nextResponse),
+                  data: query._dataMergeFn(response, nextResponse)
+                }));
+                callback();
+              }
+            });
+          } else {
+            console.log('hi');
+            callback();
+          }
+        } else {
+          // Otherwise, we can invoke the completed callback immediately.
+          callback();
+        }
       }
     });
   } else {
@@ -257,6 +294,20 @@ function performSubmission(query, callback) {
       this.emitResponse(response);
       callback();
     });
+  }
+}
+
+/**
+ * Given a leaf query and it's response, construct and return a composite query that
+ * represents the next page of results.
+ */
+function getNextQuery(query, response, remainder) {
+  var nextQuery = query.copy().from(query._rangeStart + remainder).count(remainder);
+  if (query._getNextParams()) {
+    return nextQuery.params(Utils.extend(
+        query.getParams(),
+        query._getNextParams()(query, response)
+    ));
   }
 }
 
