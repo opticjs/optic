@@ -1,7 +1,9 @@
 import OpticObject from './OpticObject';
 import Response from './Response';
+import FilterSet from './FilterSet';
 import * as QueryTransforms from './QueryTransforms';
 import * as Utils from './Utils';
+import * as Hash from '../utils/Hash';
 
 const States = {
   IDLE: 'idle',
@@ -10,7 +12,18 @@ const States = {
   CANCELED: 'canceled'
 };
 
-const mergeFilterDefaults = filter => Utils.extend(filterDefaults, filter);
+/**
+ * The submission filter defines the default behavior of a query and it cannot be removed.
+ */
+const submissionFilterSet = FilterSet.extend({
+  filters: [{
+    to: States.SUBMITTING,
+    filter: function(query, callback) {
+      performSubmission.call(this, query, () => callback(States.DONE));
+    }
+  }]
+});
+
 const availableOptions = function() {
   return {
     action: null,
@@ -19,16 +32,9 @@ const availableOptions = function() {
     parent: null,
     state: States.IDLE,
     adapter: null,
-    inboundFilters: [mergeFilterDefaults(submissionFilter)],
-    outboundFilters: [],
+    filterSets: [new submissionFilterSet()],
     config: {}
   }
-};
-
-const filterDefaults = {
-  from: null,
-  to: null,
-  filter: (query, cb) => cb()
 };
 
 const Query = OpticObject.extend(Utils.extend(getQueryTransforms(), {
@@ -84,12 +90,9 @@ const Query = OpticObject.extend(Utils.extend(getQueryTransforms(), {
     return this._ResourceClass._config;
   },
 
-  getOutboundFilters() {
-    return this._outboundFilters;
-  },
-
-  getInboundFilters() {
-    return this._inboundFilters;
+  toString() {
+    // var json
+    // return `<Query:${hash}>`;
   },
 
   _getAdapter() {
@@ -142,16 +145,6 @@ function getQueryTransforms() {
 }
 
 /**
- * The submission filter defines the default behavior of a query and it cannot be removed.
- */
-var submissionFilter = {
-  to: States.SUBMITTING,
-  filter: function(query, callback) {
-    performSubmission.call(this, query, () => callback(States.DONE));
-  }
-};
-
-/**
  * Change the state of the supplied query and call all necessary filters.
  */
 function startStateTransitionTo(query, state, callback = Utils.noOp) {
@@ -164,10 +157,15 @@ function startStateTransitionTo(query, state, callback = Utils.noOp) {
   // start transitioning to the new state.
   var ifNewState = newState => startStateTransitionTo(query, newState, callback);
 
+  var outboundFilters =
+      Utils.flatten(Utils.map(query._filterSets, filterSet => filterSet.getOutboundFilters()));
+  var inboundFilters =
+      Utils.flatten(Utils.map(query._filterSets, filterSet => filterSet.getInboundFilters()));
+
   // Start by processing outbound filters.
   processFilters(
     query,
-    Utils.select(query.getOutboundFilters(), predicate),
+    Utils.select(outboundFilters, predicate),
     ifNewState,
     () => {
       // After all outbound filters have been processed, we can officially change the
@@ -175,7 +173,7 @@ function startStateTransitionTo(query, state, callback = Utils.noOp) {
       query._state = state;
       processFilters(
         query,
-        Utils.select(query.getInboundFilters(), predicate),
+        Utils.select(inboundFilters, predicate),
         ifNewState,
         callback
       );

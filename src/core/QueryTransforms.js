@@ -36,14 +36,8 @@ export function remove(query) {
   return query;
 }
 
-export function inboundFilter(query, filter) {
-  query._inboundFilters.unshift(mergeFilterDefaults(filter));
-  return query;
-}
-
-export function outboundFilter(query, filter) {
-  query._outboundFilters.unshift(mergeFilterDefaults(filter));
-  return query;
+export function filterSet(query, filterSet) {
+  query._filterSets.unshift(filterSet);
 }
 
 export function adapter(query, adapter) {

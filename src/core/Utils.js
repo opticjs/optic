@@ -37,6 +37,10 @@ export function reduce(list, fn, memo) {
       fn(reduce(list.slice(0, list.length - 1), fn, memo), list[list.length - 1]);
 }
 
+export function flatten(listOfLists) {
+  return reduce(listOfLists, (memo, item) => memo.concat(item), []);
+}
+
 /**
  * Return a version of the list without the specified object.
  */
