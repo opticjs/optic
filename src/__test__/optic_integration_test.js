@@ -1,4 +1,3 @@
-// import createResourceClass from '../core/createResourceClass';
 import Optic from '../index';
 import * as Utils from '../core/Utils';
 // import Query from '../core/Query';

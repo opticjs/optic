@@ -1,6 +1,5 @@
 'use strict';
 
-import createResourceClass from './core/createResourceClass';
 import HttpAdapter from './adapters/HttpAdapter';
 import Query from './core/Query';
 import Resource from './core/Resource';
