@@ -46,10 +46,11 @@ function extendResource(props = {}, statics = {}) {
  */
 function buildDefaultQueryCreators(ResourceClass) {
   for (var transformName in QueryTransforms) {
-    let query = new Query(ResourceClass).config(ResourceClass._config);
     (transformName => {
-      ResourceClass[transformName] = (...args) =>
-        QueryTransforms[transformName].apply(null, [query].concat(args));
+      ResourceClass[transformName] = (...args) => {
+        var query = new Query(ResourceClass).config(ResourceClass._config);
+        return QueryTransforms[transformName].apply(null, [query].concat(args));
+      }
     })(transformName)
   }
 }

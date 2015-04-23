@@ -9,13 +9,12 @@ var Resource1 = Optic.Resource.extend({
   adapter: new Optic.HttpAdapter({
     url: '/resource1',
     parseData: function(httpResponse, query) {
-      return Utils.map(httpResponse.body.dataField,
-          item => new Resource1(item));
-    },
-    parseParams: function(httpResponse, query) {
-      return {
-        nextCursor: httpResponse.body.nextCursor
-      };
+      if (query.getParams().id) {
+        return new Resource1(httpResponse.body);
+      } else {
+        return Utils.map(httpResponse.body.dataField,
+            item => new Resource1(item));
+      }
     }
   })
 });
@@ -27,6 +26,26 @@ describe('Optic Integration Tests', function() {
 
   afterEach(function() {
     jasmine.Ajax.uninstall();
+  });
+
+  it('should fetch a single resource from an HTTP endpoint', function() {
+    var doneFn = jasmine.createSpy('success');
+    Resource1.fetch().params({id: '1234'}).submit(doneFn);
+    expect(doneFn.calls.count()).toEqual(1);
+
+    jasmine.Ajax.requests.mostRecent().respondWith({
+      status: 200,
+      contentType: 'application/json',
+      responseText: `{
+        "food": "bar",
+        "foo": 5
+      }`
+    });
+
+    var response = doneFn.calls.mostRecent().args[0];
+    expect(doneFn.calls.count()).toEqual(2);
+    expect(response.isFinal()).toBe(true);
+    expect(response.data.get('food')).toEqual('bar');
   });
 
   it('should fetch a list of resources from an HTTP endpoint', function() {

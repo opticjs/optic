@@ -14,8 +14,8 @@ const mergeFilterDefaults = filter => Utils.extend(filterDefaults, filter);
 const availableOptions = function() {
   return {
     action: null,
-    params: null,
-    data: null,
+    params: {},
+    data: {},
     parent: null,
     state: States.IDLE,
     adapter: null,
