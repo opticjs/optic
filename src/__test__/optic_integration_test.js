@@ -1,4 +1,5 @@
 import Optic from '../index';
+import QueryCache from '../filter_sets/QueryCache';
 import * as Utils from '../core/Utils';
 // import Query from '../core/Query';
 // import Response from '../core/Response'
@@ -18,7 +19,9 @@ var Resource1 = Optic.Resource.extend({
             item => new Resource1(item));
       }
     }
-  })
+  }),
+
+  filterSets: [new QueryCache()]
 });
 
 describe('Optic Integration Tests', function() {

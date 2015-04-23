@@ -15,7 +15,7 @@ const States = {
 /**
  * The submission filter defines the default behavior of a query and it cannot be removed.
  */
-const submissionFilterSet = FilterSet.extend({
+const SubmissionFilterSet = FilterSet.extend({
   filters: [{
     to: States.SUBMITTING,
     filter: function(query, callback) {
@@ -23,6 +23,7 @@ const submissionFilterSet = FilterSet.extend({
     }
   }]
 });
+const submissionFilterSet = new SubmissionFilterSet();
 
 const availableOptions = function() {
   return {
@@ -32,7 +33,7 @@ const availableOptions = function() {
     parent: null,
     state: States.IDLE,
     adapter: null,
-    filterSets: [new submissionFilterSet()],
+    filterSets: [],
     config: {}
   }
 };
@@ -100,6 +101,10 @@ const Query = OpticObject.extend(Utils.extend(getQueryTransforms(), {
     return AdapterClass ? new AdapterClass() : null;
   },
 
+  _getFilterSets() {
+    return Utils.flatten([this._config.filterSets || [], this._filterSets, [submissionFilterSet]]);
+  },
+
   /**
    * Get the value of `this` to bind to filter functions. Make sure to use this method to
    * get the context for every individual filter because of the embedded closure.
@@ -158,9 +163,9 @@ function startStateTransitionTo(query, state, callback = Utils.noOp) {
   var ifNewState = newState => startStateTransitionTo(query, newState, callback);
 
   var outboundFilters =
-      Utils.flatten(Utils.map(query._filterSets, filterSet => filterSet.getOutboundFilters()));
+      Utils.flatten(Utils.map(query._getFilterSets(), filterSet => filterSet.getOutboundFilters()));
   var inboundFilters =
-      Utils.flatten(Utils.map(query._filterSets, filterSet => filterSet.getInboundFilters()));
+      Utils.flatten(Utils.map(query._getFilterSets(), filterSet => filterSet.getInboundFilters()));
 
   // Start by processing outbound filters.
   processFilters(

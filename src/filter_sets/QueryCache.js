@@ -6,9 +6,10 @@ var QueryCache = FilterSet.extend({
     {
       to: Query.States.DONE,
       filter: (query, cb) => {
-        console.log('in a filter!');
         cb();
       }
     }
   ]
 });
+
+export default QueryCache;

@@ -6,7 +6,7 @@ import * as QueryTransforms from './QueryTransforms';
 import * as Utils from './Utils';
 
 const resourceConfigDefaults = {
-  filters: [],
+  filterSets: [],
   adapter: null,
   nextParams: null
 };

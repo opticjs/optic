@@ -1,6 +1,8 @@
 'use strict';
 
 import Adapter from './Adapter';
+import * as Utils from './Utils';
+
 var Actions = Adapter.Actions;
 
 export function parent(query, parent) {
@@ -36,8 +38,8 @@ export function remove(query) {
   return query;
 }
 
-export function filterSet(query, filterSet) {
-  query._filterSets.unshift(filterSet);
+export function filterSets(query, filterSets) {
+  query._filterSets = Utils.flatten(filterSets, query._filterSets);
 }
 
 export function adapter(query, adapter) {
