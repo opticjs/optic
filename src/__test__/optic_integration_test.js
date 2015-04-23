@@ -6,7 +6,10 @@ import * as Utils from '../core/Utils';
 
 var Resource1 = Optic.Resource.extend({
   adapter: new Optic.HttpAdapter({
-    url: '/resource1',
+    url: function() {
+      return '/resource1';
+    },
+
     parseData: function(httpResponse, query) {
       if (query.getParams().id) {
         return new Resource1(httpResponse.body);

@@ -80,7 +80,7 @@ export default Adapter.extend({
   },
 
   _buildURL(query) {
-    var url = Utils.isFunction(url) ? url(query) : this._url;
+    var url = Utils.isFunction(this._url) ? this._url(query) : this._url;
     return Utils.isString(url) ? url : URLBuilder.build(url);
   }
 });
