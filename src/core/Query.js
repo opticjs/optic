@@ -93,7 +93,8 @@ const Query = OpticObject.extend(Utils.extend(getQueryTransforms(), {
   },
 
   _getAdapter() {
-    return this._adapter || this._config.adapter || null;
+    var AdapterClass = this._adapter || this._config.adapter || null;
+    return AdapterClass ? new AdapterClass() : null;
   },
 
   /**
@@ -225,7 +226,10 @@ function processFilters(query, filters, ifNewVal, callback = Utils.noOp) {
  * @param {function} callback - The callback to invoke when the submission is complete.
  */
 function performSubmission(query, callback) {
-  query._getAdapter().submit(query, response => {
+  var adapter = query._getAdapter();
+  Utils.assert(adapter, 'An adapter must be supplied before in order to submit a query.');
+
+  adapter.submit(query, response => {
     this.emitResponse(response);
     callback();
   });

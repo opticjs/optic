@@ -5,7 +5,7 @@ import * as Utils from '../core/Utils';
 // import Resource from '../core/Resource';
 
 var Resource1 = Optic.Resource.extend({
-  adapter: new Optic.HttpAdapter({
+  adapter: Optic.HttpAdapter.extend({
     url: function() {
       return '/resource1';
     },

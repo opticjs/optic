@@ -7,30 +7,22 @@ import Response from '../core/Response';
 import URLBuilder from '../utils/URLBuilder';
 import * as Utils from '../core/Utils';
 
-const availableOptions = {
-  url: {},
-  headers: {},
-  parseData: defaultDataParser,
-  parseParams: (httpResponse, query) => {{}}
-};
-
 export default Adapter.extend({
   init(options) {
-    this._constructOptions(availableOptions, options);
     this._super(options);
   },
 
   create(query, callback) {
     var request = new HttpRequest()
         .post(this._buildURL(query))
-        .headers(this._headers)
+        .headers(this._getHeaders())
         .data(query.getData());
 
     send(request, callback, httpResponse => {
       callback(new Response({
         status: httpResponse.statusCode,
-        params: this._parseParams(httpResponse, query),
-        data: this._parseData(httpResponse, query)
+        params: this.parseParams(httpResponse, query),
+        data: this.parseData(httpResponse, query)
       }));
     });
   },
@@ -38,14 +30,14 @@ export default Adapter.extend({
   update(query, callback) {
     var request = new HttpRequest()
         .put(this._buildURL(query))
-        .headers(this._headers)
+        .headers(this._getHeaders())
         .data(query.getData());
 
     send(request, callback, httpResponse => {
       callback(new Response({
         status: httpResponse.statusCode,
-        params: this._parseParams(httpResponse, query),
-        data: this._parseData(httpResponse, query)
+        params: this.parseParams(httpResponse, query),
+        data: this.parseData(httpResponse, query)
       }));
     });
   },
@@ -53,13 +45,13 @@ export default Adapter.extend({
   remove(query, callback) {
     var request = new HttpRequest()
         .del(this._buildURL(query))
-        .headers(this._headers)
+        .headers(this._getHeaders())
         .data(query.getData());
 
     send(request, callback, httpResponse => {
       callback(new Response({
         status: httpResponse.statusCode,
-        params: this._parseParams(httpResponse, query)
+        params: this.parseParams(httpResponse, query)
       }));
     });
   },
@@ -67,21 +59,37 @@ export default Adapter.extend({
   fetch(query, callback) {
     var request = new HttpRequest()
         .get(this._buildURL(query))
-        .headers(this._headers)
+        .headers(this._getHeaders())
         .data(query.getData());
 
     send(request, callback, httpResponse => {
       callback(new Response({
         status: httpResponse.statusCode,
-        params: this._parseParams(httpResponse, query),
-        data: this._parseData(httpResponse, query)
+        params: this.parseParams(httpResponse, query),
+        data: this.parseData(httpResponse, query)
       }));
     });
   },
 
+  parseData: defaultDataParser,
+
+  parseParams: (httpResponse, query) => {{}},
+
   _buildURL(query) {
-    var url = Utils.isFunction(this._url) ? this._url(query) : this._url;
+    Utils.assert(
+        !Utils.isUndefined(this.url),
+        'Subclasses of HttpAdapter must define the `url` property.'
+    );
+    var url = Utils.isFunction(this.url) ? this.url(query) : this.url;
     return Utils.isString(url) ? url : URLBuilder.build(url);
+  },
+
+  _getHeaders(query) {
+    if (this.headers) {
+      return Utils.isString(this.headers) ? this.headers : this.headers(query);
+    } else {
+      return {};
+    }
   }
 });
 
