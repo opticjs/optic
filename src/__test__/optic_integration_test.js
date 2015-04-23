@@ -17,16 +17,7 @@ var Resource1 = Optic.Resource.extend({
         nextCursor: httpResponse.body.nextCursor
       };
     }
-  }),
-
-  nextParams: function(query, response) {
-    var nextCursor = response.params.nextCursor;
-    if (nextCursor) {
-      return {
-        cursor: nextCursor
-      };
-    }
-  }
+  })
 });
 
 describe('Optic Integration Tests', function() {
@@ -40,7 +31,7 @@ describe('Optic Integration Tests', function() {
 
   it('should fetch a list of resources from an HTTP endpoint', function() {
     var doneFn = jasmine.createSpy('success');
-    Resource1.all().submit(doneFn);
+    Resource1.fetch().submit(doneFn);
     expect(doneFn.calls.count()).toEqual(1);
 
     jasmine.Ajax.requests.mostRecent().respondWith({
@@ -58,32 +49,4 @@ describe('Optic Integration Tests', function() {
     expect(doneFn.calls.mostRecent().args[0].isFinal()).toBe(true);
     expect(doneFn.calls.mostRecent().args[0].data[0].get('id_')).toEqual('1234');
   });
-
-  // it('should fetch a paginated list of resources', function() {
-  //   var doneFn = jasmine.createSpy('success');
-  //   Resource1.from(0).count(5).submit(doneFn);
-  //   expect(doneFn.calls.count()).toEqual(1);
-
-  //   jasmine.Ajax.requests.mostRecent().respondWith({
-  //     status: 200,
-  //     contentType: 'application/json',
-  //     responseText: '{"dataField": [{"id_": "id1"}, {"id_": "id2"}], "nextCursor": "1"}'
-  //   });
-
-  //   expect(doneFn.calls.count()).toEqual(2);
-
-  //   jasmine.Ajax.requests.mostRecent().respondWith({
-  //     status: 200,
-  //     contentType: 'application/json',
-  //     responseText: '{"dataField": [{"id_": "id3"}, {"id_": "id4"}], "nextCursor": "2"}'
-  //   });
-
-  //   jasmine.Ajax.requests.mostRecent().respondWith({
-  //     status: 200,
-  //     contentType: 'application/json',
-  //     responseText: '{"dataField": [{"id_": "id5"}, {"id_": "id6"}], "nextCursor": "3"}'
-  //   });
-
-  //   expect(doneFn.calls.count()).toEqual(4);
-  // });
 });

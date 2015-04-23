@@ -10,12 +10,6 @@ const States = {
   CANCELED: 'canceled'
 };
 
-const Scopes = {
-  ALL: 'all',
-  COMPOSITE: 'composite',
-  LEAF: 'leaf'
-};
-
 const mergeFilterDefaults = filter => Utils.extend(filterDefaults, filter);
 const availableOptions = function() {
   return {
@@ -27,20 +21,13 @@ const availableOptions = function() {
     adapter: null,
     inboundFilters: [mergeFilterDefaults(submissionFilter)],
     outboundFilters: [],
-    isComposite: true,
-    rangeStart: null,
-    rangeLength: null,
-    config: {},
-    _statusMergeFn: (resp1, resp2) => resp2.status,
-    _paramsMergeFn: (resp1, resp2) => Utils.extend(resp1.params, resp2.params),
-    _dataMergeFn: (resp1, resp2) => resp1.data.concat(resp2.data)
+    config: {}
   }
 };
 
 const filterDefaults = {
   from: null,
   to: null,
-  scope: Scopes.LEAF,
   filter: (query, cb) => cb()
 };
 
@@ -105,16 +92,8 @@ const Query = OpticObject.extend(Utils.extend(getQueryTransforms(), {
     return this._inboundFilters;
   },
 
-  isRangeQuery() {
-    return !(Utils.isUndefined(this._rangeStart) && Utils.isUndefined(this._rangeLength));
-  },
-
   _getAdapter() {
     return this._adapter || this._config.adapter || null;
-  },
-
-  _getNextParams() {
-    return this._nextParams || this._config.nextParams || null;
   },
 
   /**
@@ -166,7 +145,6 @@ function getQueryTransforms() {
  */
 var submissionFilter = {
   to: States.SUBMITTING,
-  scope: Scopes.ALL,
   filter: function(query, callback) {
     performSubmission.call(this, query, () => callback(States.DONE));
   }
@@ -178,9 +156,7 @@ var submissionFilter = {
 function startStateTransitionTo(query, state, callback = Utils.noOp) {
   // Predicate helper to select filters that should be used for this transition.
   var predicate = f => (f.from ? f.from === query._state : true) &&
-      (f.to ? f.to === state : true) &&
-      (f.scope === Scopes.ALL ||
-          ((f.scope === Scopes.COMPOSITE) === query._isComposite));
+      (f.to ? f.to === state : true);
 
   // If the invoked filter specifies a state to transition to, then we stop
   // processing the list of filters for the current transition and immediately
@@ -242,73 +218,17 @@ function processFilters(query, filters, ifNewVal, callback = Utils.noOp) {
 }
 
 /**
- * Submit the query. Compisite queries will always submit by decomposing into and submitting
- * non composite queries. Non composite queries are always submitted through the adapter.
- * This is invoked with the context of the submission filter.
+ * Submit the query through the adapter. This is invoked with the context of the
+ * submission filter.
  *
  * @param {Query} query
  * @param {function} callback - The callback to invoke when the submission is complete.
  */
 function performSubmission(query, callback) {
-  if (query._isComposite) {
-    // Create an identical but non-composite query if the supplied query is composite.
-    let newQuery = query.copy();
-    newQuery._isComposite = false;
-
-    // Submit the initial decomposed query.
-    newQuery.submit(response => {
-      if (response.isFinal()) {
-        // Always emit a new response once the initial decomposed query completes.
-        this.emitResponse(response);
-
-        if (query.isRangeQuery() && response.isSuccessful()) {
-          // If this is a range query and the previous query was successful, then we have
-          // to check if additional queries are required to get all the requested data.
-          let remainder = query._rangeLength - response.data.length;
-          if (remainder > 0) {
-            console.log(remainder);
-            getNextQuery(query, response, remainder).submit(nextResponse => {
-              // Once the next query responds, we merge that response with the response of
-              // the first decomposed query and emit the merged response as the final one.
-              if (nextResponse.isFinal()) {
-                this.emitResponse(new Response({
-                  status: query._statusMergeFn(response, nextResponse),
-                  params: query._paramsMergeFn(response, nextResponse),
-                  data: query._dataMergeFn(response, nextResponse)
-                }));
-                callback();
-              }
-            });
-          } else {
-            console.log('hi');
-            callback();
-          }
-        } else {
-          // Otherwise, we can invoke the completed callback immediately.
-          callback();
-        }
-      }
-    });
-  } else {
-    query._getAdapter().submit(query, response => {
-      this.emitResponse(response);
-      callback();
-    });
-  }
-}
-
-/**
- * Given a leaf query and it's response, construct and return a composite query that
- * represents the next page of results.
- */
-function getNextQuery(query, response, remainder) {
-  var nextQuery = query.copy().from(query._rangeStart + remainder).count(remainder);
-  if (query._getNextParams()) {
-    return nextQuery.params(Utils.extend(
-        query.getParams(),
-        query._getNextParams()(query, response)
-    ));
-  }
+  query._getAdapter().submit(query, response => {
+    this.emitResponse(response);
+    callback();
+  });
 }
 
 export default Query;

@@ -3,25 +3,6 @@
 import Adapter from './Adapter';
 var Actions = Adapter.Actions;
 
-export function all(query) {
-  query._action = Actions.FETCH;
-  query._rangeStart = 0;
-  query._rangeLength = Infinity;
-  return query;
-}
-
-export function from(query, from) {
-  query._action = Actions.FETCH;
-  query._rangeStart = from;
-  return query;
-}
-
-export function count(query, count) {
-  query._action = Actions.FETCH;
-  query._rangeLength = count;
-  return query;
-}
-
 export function parent(query, parent) {
   query._action = Actions.FETCH;
   query._parent = parent;
@@ -30,6 +11,11 @@ export function parent(query, parent) {
 
 export function params(query, params) {
   query._params = params;
+  return query;
+}
+
+export function fetch(query) {
+  query._action = Actions.FETCH;
   return query;
 }
 
@@ -57,11 +43,6 @@ export function inboundFilter(query, filter) {
 
 export function outboundFilter(query, filter) {
   query._outboundFilters.unshift(mergeFilterDefaults(filter));
-  return query;
-}
-
-export function composite(query, isComposite) {
-  query._isComposite = isComposite;
   return query;
 }
 
