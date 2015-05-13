@@ -18,8 +18,8 @@ const States = {
 const SubmissionFilterSet = FilterSet.extend({
   filters: [{
     to: States.SUBMITTING,
-    filter: function(query, callback) {
-      performSubmission.call(this, query, () => callback(States.DONE));
+    filter: function(query, emitResponse, callback) {
+      performSubmission.call(this, query, emitResponse, () => callback(States.DONE));
     }
   }]
 });
@@ -106,33 +106,28 @@ const Query = OpticObject.extend(Utils.extend(getQueryTransforms(), {
   },
 
   /**
-   * Get the value of `this` to bind to filter functions. Make sure to use this method to
-   * get the context for every individual filter because of the embedded closure.
+   * Return a function that accepts responses from filters. If a filter calls this function more
+   * than once then only the last response for that filter is registered with the query.
    */
-  _getFilterContext() {
-    var query = this;
-    return {
-      emitResponse: (() => {
-        var hasEmitted = false;
-        return function(response) {
-          var responses = query._emittedResponses;
+  _getResonseCollector() {
+    var hasEmitted = false;
+    return response => {
+      var responses = this._emittedResponses;
 
-          // Only allow new responses until a final response has been seen.
-          Utils.assert(responses.length === 0 || !Utils.last(responses).isFinal(), `
-              This query cannot accept responses because a final response has already
-              been emitted.
-          `);
+      // Only allow new responses until a final response has been seen.
+      Utils.assert(responses.length === 0 || !Utils.last(responses).isFinal(), `
+          This query cannot accept responses because a final response has already
+          been emitted.
+      `);
 
-          // Discard the latest response from this filter upon a new one.
-          if (hasEmitted) {
-            responses.pop();
-          }
+      // Discard the latest response from this filter upon a new one.
+      if (hasEmitted) {
+        responses.pop();
+      }
 
-          // Push the latest response from this filter.
-          responses.push(response);
-          hasEmitted = true;
-        }
-      })()
+      // Push the latest response from this filter.
+      responses.push(response);
+      hasEmitted = true;
     };
   }
 }), {States: States});
@@ -175,10 +170,11 @@ function startStateTransitionTo(query, state, callback = Utils.noOp) {
     () => {
       // After all outbound filters have been processed, we can officially change the
       // _state property of this query and start processing inbound filters.
+      var selectedInboundFilters = Utils.select(inboundFilters, predicate)
       query._state = state;
       processFilters(
         query,
-        Utils.select(inboundFilters, predicate),
+        selectedInboundFilters,
         ifNewState,
         callback
       );
@@ -198,7 +194,7 @@ function processFilters(query, filters, ifNewVal, callback = Utils.noOp) {
     callback();
   } else {
     // Otherwise we invoke the first filter.
-    filters[0].filter.call(query._getFilterContext(), query, newVal => {
+    filters[0].filter.call(null, query, query._getResonseCollector(), newVal => {
       // Invoke the onUpdate function for the query if this filter emitted a response.
       if (query._emittedResponses.length !== initialResponsesLength) {
         Utils.assert(query._emittedResponses.length === initialResponsesLength + 1, `
@@ -228,12 +224,12 @@ function processFilters(query, filters, ifNewVal, callback = Utils.noOp) {
  * @param {Query} query
  * @param {function} callback - The callback to invoke when the submission is complete.
  */
-function performSubmission(query, callback) {
+function performSubmission(query, emitResponse, callback) {
   var adapter = query._getAdapter();
   Utils.assert(adapter, 'An adapter must be supplied before in order to submit a query.');
 
   adapter.submit(query, response => {
-    this.emitResponse(response);
+    emitResponse(response);
     callback();
   });
 }

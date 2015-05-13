@@ -7,7 +7,7 @@ var concat = require('broccoli-concat');
 var glob = require('glob');
 var path = require('path');
 
-var testSuiteGlob = '**/__test__/**/*test.js*';
+var testSuiteGlob = '**/__test__/**/*Test.js*';
 
 var testDirectory = funnel('test', {
   include: ['**/*']

@@ -51,8 +51,3 @@ export function config(query, config) {
   query._config = config;
   return query;
 }
-
-export function nextParams(nextParamsFn) {
-  query._nextParams = nextParamsFn;
-  return query;
-}

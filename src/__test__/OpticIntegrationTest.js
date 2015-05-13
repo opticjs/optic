@@ -5,6 +5,8 @@ import * as Utils from '../core/Utils';
 // import Response from '../core/Response'
 // import Resource from '../core/Resource';
 
+var queryCache = new QueryCache();
+
 var Resource1 = Optic.Resource.extend({
   adapter: Optic.HttpAdapter.extend({
     url: function() {
@@ -21,7 +23,11 @@ var Resource1 = Optic.Resource.extend({
     }
   }),
 
-  filterSets: [new QueryCache()]
+  filterSets: [queryCache],
+
+  sampleInstanceMethod: function() {
+    return 'hello';
+  }
 });
 
 describe('Optic Integration Tests', function() {
@@ -51,10 +57,12 @@ describe('Optic Integration Tests', function() {
     expect(doneFn.calls.count()).toEqual(2);
     expect(response.isFinal()).toBe(true);
     expect(response.data.get('food')).toEqual('bar');
+    expect(response.data.sampleInstanceMethod()).toEqual('hello');
   });
 
   it('should fetch a list of resources from an HTTP endpoint', function() {
     var doneFn = jasmine.createSpy('success');
+    var arg0;
     Resource1.fetch().submit(doneFn);
     expect(doneFn.calls.count()).toEqual(1);
 
@@ -70,7 +78,13 @@ describe('Optic Integration Tests', function() {
     });
 
     expect(doneFn.calls.count()).toEqual(2);
-    expect(doneFn.calls.mostRecent().args[0].isFinal()).toBe(true);
-    expect(doneFn.calls.mostRecent().args[0].data[0].get('id_')).toEqual('1234');
+    arg0 = doneFn.calls.mostRecent().args[0];
+    expect(arg0.isFinal()).toBe(true);
+    expect(arg0.data[0].get('id_')).toEqual('1234');
+    expect(arg0.data[0].sampleInstanceMethod()).toEqual('hello');
+  });
+
+  it('should do basic caching with the QueryCache', function() {
+    expect(true).toBe(true);
   });
 });

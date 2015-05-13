@@ -8,7 +8,7 @@ export function fnv32a(str) {
     hval ^= str.charCodeAt(i);
     hval += (hval << 1) + (hval << 4) + (hval << 7) + (hval << 8) + (hval << 24);
   }
-  return hval >>> 0;
+  return '' + (hval >>> 0);
 }
 
 /**
@@ -19,11 +19,18 @@ export function fnv32a(str) {
  */
 export function hashCode(str) {
   var hash = 0, i, chr, len;
-  if (input.length == 0) return hash;
-  for (i = 0, len = input.length; i < len; i++) {
-    chr   = input.charCodeAt(i);
+  if (str.length == 0) return hash;
+  for (i = 0, len = str.length; i < len; i++) {
+    chr   = str.charCodeAt(i);
     hash  = ((hash << 5) - hash) + chr;
     hash |= 0; // Convert to 32bit integer
   }
   return '' + hash;
+}
+
+/**
+ * Combine the output of two hash functions to reduce the possibility of collisions.
+ */
+export function combinedHashFn(str) {
+  return fnv32a(str) + hashCode(str);
 }
