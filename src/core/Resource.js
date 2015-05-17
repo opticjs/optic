@@ -26,14 +26,18 @@ Resource.extend = extendResource;
  * Create a custom subclass of Resource.
  */
 function extendResource(props = {}, statics = {}) {
+  var ResourceClass;
+  var config = Utils.reduce(Utils.keys(resourceConfigDefaults), (memo, key) => Utils.extend(memo, {
+    [key]: Utils.contains(Utils.keys(props), key) ? props[key] : resourceConfigDefaults[key]
+  }), {});
+
   statics = Utils.extend(statics, {
     _classId: Utils.uid(),
-    _config: Utils.reduce(Utils.keys(resourceConfigDefaults), (memo, key) => Utils.extend(memo, {
-      [key]: Utils.contains(Utils.keys(props), key) ? props[key] : resourceConfigDefaults[key]
-    }), {})
+    _config: config,
+    getConfig: () => config
   });
 
-  var ResourceClass = OpticObject.extend.call(Resource, props, statics);
+  ResourceClass = OpticObject.extend.call(Resource, props, statics);
   buildDefaultQueryCreators(ResourceClass);
   return ResourceClass;
 }
@@ -47,8 +51,8 @@ function buildDefaultQueryCreators(ResourceClass) {
   for (var transformName in QueryTransforms) {
     (transformName => {
       ResourceClass[transformName] = (...args) => {
-        var query = new Query(ResourceClass).config(ResourceClass._config);
-        return QueryTransforms[transformName].apply(null, [query].concat(args));
+        return QueryTransforms[transformName]
+            .apply(null, [new Query(ResourceClass)].concat(args));
       }
     })(transformName)
   }

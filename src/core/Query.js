@@ -44,6 +44,17 @@ const Query = OpticObject.extend(Utils.extend(getQueryTransforms(), {
     this._emittedResponses = [];
     this._constructOptions(availableOptions(), options);
     this._super();
+
+    // Setup default query config options.
+    var config = ResourceClass.getConfig();
+
+    if (config.filterSets) {
+      Utils.each(config.filterSets, filterSet => this._addFilterSet(filterSet));
+    }
+
+    if (config.adapter) {
+      this._adapter = config.adapter;
+    }
   },
 
   /**
@@ -87,22 +98,26 @@ const Query = OpticObject.extend(Utils.extend(getQueryTransforms(), {
     return this._ResourceClass;
   },
 
-  getResourceConfig() {
-    return this._ResourceClass._config;
-  },
-
   toString() {
     // var json
     // return `<Query:${hash}>`;
   },
 
-  _getAdapter() {
-    var AdapterClass = this._adapter || this._config.adapter || null;
+  _getAdapterInstance() {
+    var AdapterClass = this._adapter || null;
     return AdapterClass ? new AdapterClass() : null;
   },
 
-  _getFilterSets() {
-    return Utils.flatten([this._config.filterSets || [], this._filterSets, [submissionFilterSet]]);
+  _getEffectiveFilterSets() {
+    return Utils.flatten([this._filterSets, [submissionFilterSet]]);
+  },
+
+  _addFilterSet(filterSet) {
+    return Utils.union(this._filterSets, [filterSet]);
+  },
+
+  _removeFilterSet(filterSet) {
+    this._filterSets = Utils.without(this._filterSets, filterSet);
   },
 
   /**
@@ -158,9 +173,9 @@ function startStateTransitionTo(query, state, callback = Utils.noOp) {
   var ifNewState = newState => startStateTransitionTo(query, newState, callback);
 
   var outboundFilters =
-      Utils.flatten(Utils.map(query._getFilterSets(), filterSet => filterSet.getOutboundFilters()));
+      Utils.flatten(Utils.map(query._getEffectiveFilterSets(), filterSet => filterSet.getOutboundFilters()));
   var inboundFilters =
-      Utils.flatten(Utils.map(query._getFilterSets(), filterSet => filterSet.getInboundFilters()));
+      Utils.flatten(Utils.map(query._getEffectiveFilterSets(), filterSet => filterSet.getInboundFilters()));
 
   // Start by processing outbound filters.
   processFilters(
@@ -225,7 +240,7 @@ function processFilters(query, filters, ifNewVal, callback = Utils.noOp) {
  * @param {function} callback - The callback to invoke when the submission is complete.
  */
 function performSubmission(query, emitResponse, callback) {
-  var adapter = query._getAdapter();
+  var adapter = query._getAdapterInstance();
   Utils.assert(adapter, 'An adapter must be supplied before in order to submit a query.');
 
   adapter.submit(query, response => {

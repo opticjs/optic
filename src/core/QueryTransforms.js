@@ -38,16 +38,21 @@ export function remove(query) {
   return query;
 }
 
-export function filterSets(query, filterSets) {
-  query._filterSets = Utils.flatten(filterSets, query._filterSets);
-}
-
 export function adapter(query, adapter) {
   query._adapter = adapter;
   return query;
 }
 
-export function config(query, config) {
-  query._config = config;
+export function addFilterSet(query, filterSet) {
+  query._addFilterSet(filterSet);
   return query;
+}
+
+export function removeFilterSet(query, filterSet) {
+  query._removeFilterSet(filterSet);
+  return query;
+}
+
+export function filterSets(query, filterSets) {
+  query._filterSets = Utils.flatten(filterSets, query._filterSets);
 }

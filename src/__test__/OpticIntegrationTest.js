@@ -17,8 +17,7 @@ var Resource1 = Optic.Resource.extend({
       if (query.getParams().id) {
         return new Resource1(httpResponse.body);
       } else {
-        return Utils.map(httpResponse.body.dataField,
-            item => new Resource1(item));
+        return Utils.map(httpResponse.body.dataField, item => new Resource1(item));
       }
     }
   }),

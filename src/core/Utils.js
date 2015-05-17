@@ -48,6 +48,15 @@ export function without(list, withoutThis) {
   return select(list, item => item !== withoutThis);
 }
 
+export function unique(list) {
+  return reduce(list, (memo, item) =>
+      contains(memo, item) ? memo : memo.concat([item]), []);
+}
+
+export function union(...lists) {
+  return unique(flatten(lists));
+}
+
 /**
  * Invoke `fn` for each item in the enumerable.
  */
@@ -88,8 +97,8 @@ export function merge(objects) {
   return extend.apply(objects[0], objects.slice(1));
 }
 
-export function contains(arr, val) {
-  return arr.indexOf(val) !== -1;
+export function contains(list, val) {
+  return list.indexOf(val) !== -1;
 }
 
 export function omit(obj, ...keysToOmit) {
