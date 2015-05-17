@@ -1,3 +1,4 @@
+import OpticObject from '../core/OpticObject';
 import Optic from '../index';
 import QueryCache from '../filter_sets/QueryCache';
 import * as Utils from '../core/Utils';
@@ -5,31 +6,46 @@ import * as Utils from '../core/Utils';
 // import Response from '../core/Response'
 // import Resource from '../core/Resource';
 
-var queryCache = new QueryCache();
 
-var Resource1 = Optic.Resource.extend({
-  adapter: Optic.HttpAdapter.extend({
-    url: function() {
-      return '/resource1';
-    },
+/**
+ * Tests that simulate real use of Optic.
+ */
 
-    parseData: function(httpResponse, query) {
-      if (query.getParams().id) {
-        return new Resource1(httpResponse.body);
-      } else {
-        return Utils.map(httpResponse.body.dataField, item => new Resource1(item));
-      }
-    }
-  }),
-
-  filterSets: [queryCache],
-
-  sampleInstanceMethod: function() {
-    return 'hello';
-  }
-});
+var Resource1;
+var queryCache;
 
 describe('Optic Integration Tests', function() {
+  function getResource(options) {
+    return Optic.Resource.extend({
+      adapter: Optic.HttpAdapter.extend({
+        url: function() {
+          return '/resource1';
+        },
+
+        parseData: function(httpResponse, query) {
+          if (query.getParams().id) {
+            return new Resource1(httpResponse.body);
+          } else {
+            return Utils.map(httpResponse.body.dataField, item => new Resource1(item));
+          }
+        }
+      }),
+
+      filterSets: Utils.union(
+        [],
+        options.queryCache ? [queryCache] : []
+      ),
+
+      sampleInstanceMethod: function() {
+        return 'hello';
+      }
+    });
+  }
+
+  beforeEach(function() {
+    queryCache = new QueryCache();
+  });
+
   beforeEach(function() {
     jasmine.Ajax.install();
   });
@@ -40,6 +56,7 @@ describe('Optic Integration Tests', function() {
 
   it('should fetch a single resource from an HTTP endpoint', function() {
     var doneFn = jasmine.createSpy('success');
+    Resource1 = getResource({queryCache: false});
     Resource1.fetch().params({id: '1234'}).submit(doneFn);
     expect(doneFn.calls.count()).toEqual(1);
 
@@ -62,6 +79,8 @@ describe('Optic Integration Tests', function() {
   it('should fetch a list of resources from an HTTP endpoint', function() {
     var doneFn = jasmine.createSpy('success');
     var arg0;
+    Resource1 = getResource({queryCache: false});
+
     Resource1.fetch().submit(doneFn);
     expect(doneFn.calls.count()).toEqual(1);
 
@@ -84,6 +103,26 @@ describe('Optic Integration Tests', function() {
   });
 
   it('should do basic caching with the QueryCache', function() {
-    expect(true).toBe(true);
+    var doneFn = jasmine.createSpy('success');
+    Resource1 = getResource({queryCache: true});
+
+    // Initial query. Should fire an ajax requst.
+    Resource1.fetch().params({id: 5}).submit(doneFn);
+    expect(doneFn.calls.count()).toEqual(1);
+    jasmine.Ajax.requests.mostRecent().respondWith({status: 200, responseText: '{}'});
+    expect(doneFn.calls.count()).toEqual(2);
+    expect(jasmine.Ajax.requests.count()).toEqual(1);
+
+    // An identical query should not fire another ajax request.
+    Resource1.fetch().params({id: 5}).submit(doneFn);
+    expect(doneFn.calls.count()).toEqual(4);
+    expect(jasmine.Ajax.requests.count()).toEqual(1);
+
+    // This query has different params so a new ajax request should be sent.
+    Resource1.fetch().params({id: 6}).submit(doneFn);
+    expect(doneFn.calls.count()).toEqual(5);
+    expect(jasmine.Ajax.requests.count()).toEqual(2);
+    jasmine.Ajax.requests.mostRecent().respondWith({status: 200, responseText: '{}'});
+    expect(doneFn.calls.count()).toEqual(6);
   });
 });

@@ -8,7 +8,7 @@ export function fnv32a(str) {
     hval ^= str.charCodeAt(i);
     hval += (hval << 1) + (hval << 4) + (hval << 7) + (hval << 8) + (hval << 24);
   }
-  return '' + (hval >>> 0);
+  return '' + hval >>> 0;
 }
 
 /**
@@ -25,7 +25,7 @@ export function hashCode(str) {
     hash  = ((hash << 5) - hash) + chr;
     hash |= 0; // Convert to 32bit integer
   }
-  return '' + hash;
+  return hash < 0 ? '' + (0-hash) : '1' + hash;
 }
 
 /**

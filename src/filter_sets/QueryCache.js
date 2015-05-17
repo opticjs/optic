@@ -6,25 +6,42 @@ var QueryCache = FilterSet.extend({
     this._resources = {};
   },
 
-  filters: [
-    {
-      to: Query.States.DONE,
-      filter: (query, emitResponse, cb) => {
-        cb();
+  filters() {
+    return [
+      {
+        from: Query.States.IDLE,
+        to: Query.States.SUBMITTING,
+        filter: (query, emitResponse, cb) => {
+          var key = query.toString(false);
+          var response = this._resources[key];
+
+          if (response) {
+            emitResponse(response);
+            cb(Query.States.DONE);
+          } else {
+            cb();
+          }
+        }
+      },
+
+      {
+        to: Query.States.DONE,
+        filter: (query, emitResponse, cb) => {
+          var key = query.toString(false);
+          var response = query.getFinalResponse();
+
+          if (!this._resources[key] && response) {
+            this._resources[key] = response;
+          }
+
+          cb();
+        }
       }
-    },
+    ];
+  },
 
-    {
-      from: Query.States.IDLE,
-      to: Query.States.SUBMITTING,
-      filter: (query, emitResponse, cb) => {
-        cb();
-      }
-    }
-  ],
-
-  queryMethods: {
-
+  queryMethods() {
+    return {};
   }
 });
 

@@ -16,12 +16,14 @@ const States = {
  * The submission filter defines the default behavior of a query and it cannot be removed.
  */
 const SubmissionFilterSet = FilterSet.extend({
-  filters: [{
-    to: States.SUBMITTING,
-    filter: function(query, emitResponse, callback) {
-      performSubmission.call(this, query, emitResponse, () => callback(States.DONE));
-    }
-  }]
+  filters() {
+    return [{
+      to: States.SUBMITTING,
+      filter: function(query, emitResponse, callback) {
+        performSubmission.call(this, query, emitResponse, () => callback(States.DONE));
+      }
+    }];
+  }
 });
 const submissionFilterSet = new SubmissionFilterSet();
 
@@ -33,8 +35,7 @@ const availableOptions = function() {
     parent: null,
     state: States.IDLE,
     adapter: null,
-    filterSets: [],
-    config: {}
+    filterSets: []
   }
 };
 
@@ -98,9 +99,16 @@ const Query = OpticObject.extend(Utils.extend(getQueryTransforms(), {
     return this._ResourceClass;
   },
 
-  toString() {
-    // var json
-    // return `<Query:${hash}>`;
+  getFinalResponse() {
+    var response = Utils.last(this._emittedResponses);
+    return response && response.isFinal() ? response : null;
+  },
+
+  toString(includeState = true) {
+    return this._super(Utils.union(
+        ['_action', '_params', '_data', '_filterSets', '_adapter', '_parent'],
+        includeState ? ['_state'] : []
+    ));
   },
 
   _getAdapterInstance() {
@@ -113,7 +121,7 @@ const Query = OpticObject.extend(Utils.extend(getQueryTransforms(), {
   },
 
   _addFilterSet(filterSet) {
-    return Utils.union(this._filterSets, [filterSet]);
+    this._filterSets = Utils.union(this._filterSets, [filterSet]);
   },
 
   _removeFilterSet(filterSet) {

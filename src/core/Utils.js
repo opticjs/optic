@@ -140,6 +140,10 @@ export function keys(obj) {
   return keys;
 }
 
+export function sort(list) {
+  return list.slice().sort((a, b) => a < b ? -1 : 1);
+}
+
 /**
  * A probably over-cautious method of detecting if a value is `undefined`. Taken from
  * Underscore's implementation of the same method.
@@ -157,7 +161,7 @@ export function isString(val) {
 }
 
 export function isObject(val) {
-  return typeof val === 'object';
+  return typeof val === 'object' && !isNull(val);
 }
 
 export function isFunction(val) {
@@ -166,6 +170,10 @@ export function isFunction(val) {
 
 export function isArray(val) {
   return val instanceof Array;
+}
+
+export function isNull(val) {
+  return val === null;
 }
 
 /**

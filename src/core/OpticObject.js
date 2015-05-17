@@ -1,6 +1,7 @@
 'use strict';
 
 import * as Utils from './Utils';
+import * as Hash from '../utils/Hash';
 
 /**
  * All classes in Optic extend from this base class.
@@ -22,11 +23,41 @@ OpticObject.prototype._deconstructOptions = function(defaults) {
     ),
     {}
   );
-}
+};
+
+OpticObject.prototype.toString = function(keys) {
+  var objectSet = [];
+  var convert = (o, keys) => {
+    if (Utils.isFunction(o) || (o !== this && o instanceof OpticObject)) {
+      return o.toString();
+    } else if (Utils.isArray(o)) {
+      return Utils.map(o, convert);
+    } else if (Utils.isObject(o)) {
+      return Utils.reduce(Utils.sort(keys || Utils.keys(o)), (memo, key) => {
+        var setIndex = objectSet.indexOf(o[key]);
+        var ret = Utils.extend(memo, {
+          [key]: setIndex === -1 ? convert(o[key]) : `$ref-${setIndex}`
+        });
+
+        if (setIndex === -1) {
+          objectSet.push(o[key]);
+        }
+
+        return ret;
+      }, {});
+    } else if (Utils.isUndefined(o)) {
+      return 'undefined';
+    } else {
+      return o;
+    }
+  };
+
+  return `<Object:${Hash.combinedHashFn(JSON.stringify(convert(this, keys)))}>`;
+};
 
 OpticObject.prototype.init = () => {};
 
-// Inspired (copied) from http://ejohn.org/blog/simple-javascript-inheritance/
+// Copied from http://ejohn.org/blog/simple-javascript-inheritance/
 var extend = function(props, statics) {
   var newPrototype = new this();
   var _super = this.prototype;
@@ -48,6 +79,7 @@ var extend = function(props, statics) {
 
   // The new class constructor that calls through to the `init` method.
   function NewClass() {
+    this._instanceId = Utils.uid();
     this.init && this.init.apply(this, arguments);
   }
 
@@ -55,6 +87,9 @@ var extend = function(props, statics) {
   Utils.each(statics, (val, key) => {
     NewClass[key] = val;
   });
+
+  // Unique ID of this class
+  NewClass._classId = Utils.uid();
 
   NewClass.prototype = newPrototype;
   NewClass.prototype.constructor = NewClass;
