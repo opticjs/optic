@@ -3,7 +3,7 @@ import Query from '../core/Query';
 
 var QueryCache = FilterSet.extend({
   init() {
-    this._resources = {};
+    this._responses = {};
   },
 
   filters() {
@@ -13,7 +13,7 @@ var QueryCache = FilterSet.extend({
         to: Query.States.SUBMITTING,
         filter: (query, emitResponse, cb) => {
           var key = query.toString(false);
-          var response = this._resources[key];
+          var response = this._responses[key];
 
           if (response) {
             emitResponse(response);
@@ -30,8 +30,8 @@ var QueryCache = FilterSet.extend({
           var key = query.toString(false);
           var response = query.getFinalResponse();
 
-          if (!this._resources[key] && response) {
-            this._resources[key] = response;
+          if (!this._responses[key] && response) {
+            this._responses[key] = response;
           }
 
           cb();
