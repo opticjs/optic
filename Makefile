@@ -1,11 +1,11 @@
-.PHONY: build clean
+.PHONY: build clean serve
 
 clean:
-	rm -rf dist tmp
+	@rm -rf dist tmp
 
 build: clean
-	broccoli build dist
+	@broccoli build dist
 
 serve: clean
-	broccoli serve
+	@broccoli serve
 
