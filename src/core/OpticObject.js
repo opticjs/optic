@@ -2,12 +2,15 @@
 
 import * as Utils from './Utils';
 import * as Hash from '../utils/Hash';
+import EventManager from './EventManager';
 
 /**
  * All classes in Optic extend from this base class.
  */
-export default class OpticObject {}
+export default class OpticObject extends EventManager {}
 
+// TODO(lopatin) Can this (and option deconstruction) be implemented with prototypes? Instead
+// of ugly property copying.
 OpticObject.prototype._constructOptions = function(defaults, options) {
   Utils.each(defaults, (defaultVal, key) => {
     this['_' + key] = Utils.isUndefined(options[key]) ? defaultVal : options[key];
