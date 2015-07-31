@@ -1,6 +1,7 @@
 import OpticObject from '../core/OpticObject';
 import Optic from '../index';
 import QueryCache from '../filter_sets/QueryCache';
+import QueryCombiner from '../filter_sets/QueryCombiner';
 import * as Utils from '../core/Utils';
 // import Query from '../core/Query';
 // import Response from '../core/Response'
@@ -13,9 +14,10 @@ import * as Utils from '../core/Utils';
 
 var Resource1;
 var queryCache;
+var queryCombiner;
 
 describe('Optic Integration Tests', function() {
-  function getResource(options) {
+  function getResource(options = {}) {
     return Optic.Resource.extend({
       adapter: Optic.HttpAdapter.extend({
         url: function() {
@@ -32,8 +34,8 @@ describe('Optic Integration Tests', function() {
       }),
 
       filterSets: Utils.union(
-        [],
-        options.queryCache ? [queryCache] : []
+        options.queryCache ? [options.queryCache] : [],
+        options.queryCombiner ? [options.queryCombiner] : []
       ),
 
       sampleInstanceMethod: function() {
@@ -43,11 +45,11 @@ describe('Optic Integration Tests', function() {
   }
 
   beforeEach(function() {
-    queryCache = new QueryCache();
-  });
-
-  beforeEach(function() {
     jasmine.Ajax.install();
+
+    // Setup filter sets
+    queryCache = new QueryCache();
+    queryCombiner = new QueryCombiner();
   });
 
   afterEach(function() {
@@ -56,7 +58,7 @@ describe('Optic Integration Tests', function() {
 
   it('should fetch a single resource from an HTTP endpoint', function() {
     var doneFn = jasmine.createSpy('success');
-    Resource1 = getResource({queryCache: false});
+    Resource1 = getResource();
     Resource1.fetch().params({id: '1234'}).submit(doneFn);
     expect(doneFn.calls.count()).toEqual(1);
 
@@ -79,7 +81,7 @@ describe('Optic Integration Tests', function() {
   it('should fetch a list of resources from an HTTP endpoint', function() {
     var doneFn = jasmine.createSpy('success');
     var arg0;
-    Resource1 = getResource({queryCache: false});
+    Resource1 = getResource();
 
     Resource1.fetch().submit(doneFn);
     expect(doneFn.calls.count()).toEqual(1);
@@ -104,9 +106,9 @@ describe('Optic Integration Tests', function() {
 
   it('should do basic caching with the QueryCache', function() {
     var doneFn = jasmine.createSpy('success');
-    Resource1 = getResource({queryCache: true});
+    Resource1 = getResource({queryCache: queryCache});
 
-    // Initial query. Should fire an ajax requst.
+    // Initial query. Should fire an ajax request.
     Resource1.fetch().params({id: 5}).submit(doneFn);
     expect(doneFn.calls.count()).toEqual(1);
     jasmine.Ajax.requests.mostRecent().respondWith({status: 200, responseText: '{}'});
@@ -125,4 +127,29 @@ describe('Optic Integration Tests', function() {
     jasmine.Ajax.requests.mostRecent().respondWith({status: 200, responseText: '{}'});
     expect(doneFn.calls.count()).toEqual(6);
   });
+
+  it('should do basic query combining with QueryCombiner', function() {
+    var doneFn1 = jasmine.createSpy('success');
+    var doneFn2 = jasmine.createSpy('success');
+    Resource1 = getResource({queryCombiner: queryCombiner});
+
+    // Initial query. Should fire an ajax request.
+    Resource1.fetch().params({id: 5}).submit(doneFn1);
+    expect(doneFn1.calls.count()).toEqual(1);
+    expect(jasmine.Ajax.requests.count()).toEqual(1);
+
+    // An identical query. This should be linked with the previous one, and should not fire it's
+    // own ajax request.
+    Resource1.fetch().params({id: 5}).submit(doneFn2);
+    expect(doneFn2.calls.count()).toEqual(1);
+    expect(jasmine.Ajax.requests.count()).toEqual(1);
+
+    // The ajax query for the initial query now returns.
+    jasmine.Ajax.requests.mostRecent().respondWith({status: 200, responseText: '{}'});
+    expect(jasmine.Ajax.requests.count()).toEqual(1);
+    expect(doneFn1.calls.count()).toEqual(2);
+    expect(doneFn2.calls.count()).toEqual(2);
+  });
+
+  it('should do basic resource linking with ResourceLinker');
 });

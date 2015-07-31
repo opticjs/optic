@@ -180,10 +180,14 @@ function startStateTransitionTo(query, state, callback = Utils.noOp) {
   // start transitioning to the new state.
   var ifNewState = newState => startStateTransitionTo(query, newState, callback);
 
-  var outboundFilters =
-      Utils.flatten(Utils.map(query._getEffectiveFilterSets(), filterSet => filterSet.getOutboundFilters()));
-  var inboundFilters =
-      Utils.flatten(Utils.map(query._getEffectiveFilterSets(), filterSet => filterSet.getInboundFilters()));
+  var outboundFilters = Utils.flatten(
+      Utils.map(query._getEffectiveFilterSets(),
+      filterSet => filterSet.getOutboundFilters())
+  );
+  var inboundFilters = Utils.flatten(
+      Utils.map(query._getEffectiveFilterSets(),
+      filterSet => filterSet.getInboundFilters())
+  );
 
   // Start by processing outbound filters.
   processFilters(

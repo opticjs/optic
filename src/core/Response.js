@@ -6,7 +6,8 @@ import OpticObject from './OpticObject';
 /**
  * Responses are emitted by a query. A single query can emit multiple "temporary" responses
  * followed by one "final" response. Temporary responses are useful for communicating the
- * progress of the query to the user.
+ * progress of the query to the user. A response *should not* have a reference to the query
+ * that triggered it.
  */
 export default OpticObject.extend({
 
