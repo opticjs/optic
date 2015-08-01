@@ -104,6 +104,10 @@ const Query = OpticObject.extend(Utils.extend(getQueryTransforms(), {
     return response && response.isFinal() ? response : null;
   },
 
+  getLatestResponse() {
+    return Utils.last(this._emittedResponses) || null;
+  },
+
   toString(includeState = true) {
     return this._super(Utils.union(
         ['_action', '_params', '_data', '_filterSets', '_adapter', '_parent'],
