@@ -8,12 +8,12 @@ import * as Utils from '../core/Utils';
  * queries before the merge are fired independently.
  */
 
-var QueryLinker = FilterSet.extend({
+export default FilterSet.extend('QueryCombiner', {
   init() {
     this._queryBuckets = {};
   },
 
-  filters() {
+  queryFilters() {
     return [
       {
         from: Query.States.IDLE,
@@ -62,5 +62,3 @@ var QueryLinker = FilterSet.extend({
     return {};
   }
 });
-
-export default QueryLinker;

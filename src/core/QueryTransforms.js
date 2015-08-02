@@ -43,8 +43,19 @@ export function adapter(query, adapter) {
   return query;
 }
 
+export function filterSets(query, filterSets) {
+  query._filterSets = filterSets;
+}
+
 export function addFilterSet(query, filterSet) {
   query._addFilterSet(filterSet);
+  return query;
+}
+
+export function addFilterSets(query, filterSets = []) {
+  Utils.each(filterSets, filterSet => {
+    query._addFilterSet(filterSet);
+  });
   return query;
 }
 
@@ -53,6 +64,19 @@ export function removeFilterSet(query, filterSet) {
   return query;
 }
 
-export function filterSets(query, filterSets) {
-  query._filterSets = Utils.flatten(filterSets, query._filterSets);
+export function removeFilterSets(query, filterSets = []) {
+  Utils.each(filterSets, filterSet => {
+    query._removeFilterSet(filterSet);
+  });
+  return query;
+}
+
+export function sortQueryFilters(query, sortFn) {
+  query._sortQueryFiltersFn = sortFn;
+  return query;
+}
+
+export function sortResponseFilters(query, sortFn) {
+  query._sortResponseFiltersFn = sortFn;
+  return query;
 }

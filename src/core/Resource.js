@@ -10,7 +10,7 @@ const resourceConfigDefaults = {
   adapter: null
 };
 
-var Resource = OpticObject.extend({
+var Resource = OpticObject.extend('Resource', {
   init(attributes) {
     this._attributes = attributes;
   },
@@ -25,7 +25,7 @@ Resource.extend = extendResource;
 /**
  * Create a custom subclass of Resource.
  */
-function extendResource(props = {}, statics = {}) {
+function extendResource(resourceName, props = {}, statics = {}) {
   var ResourceClass;
   var config = Utils.reduce(Utils.keys(resourceConfigDefaults), (memo, key) => Utils.extend(memo, {
     [key]: Utils.contains(Utils.keys(props), key) ? props[key] : resourceConfigDefaults[key]
@@ -37,7 +37,7 @@ function extendResource(props = {}, statics = {}) {
     getConfig: () => config
   });
 
-  ResourceClass = OpticObject.extend.call(Resource, props, statics);
+  ResourceClass = OpticObject.extend.call(Resource, resourceName, props, statics);
   buildDefaultQueryCreators(ResourceClass);
   return ResourceClass;
 }

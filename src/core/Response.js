@@ -3,48 +3,52 @@
 import * as Utils from './Utils';
 import OpticObject from './OpticObject';
 
+const availableOptions = function() {
+  return {
+    data: null,
+    status: null,
+    params: {}
+  };
+};
+
 /**
- * Responses are emitted by a query. A single query can emit multiple "temporary" responses
- * followed by one "final" response. Temporary responses are useful for communicating the
- * progress of the query to the user. A response *should not* have a reference to the query
- * that triggered it.
+ * Responses are emitted by query filters and and passed through to the query submission
+ * callbacks. A response *should not* have a reference to the query that triggered it.
  */
-export default OpticObject.extend({
+export default OpticObject.extend('Response', {
 
   /**
    * @param {Object} [options={}]
-   * @param {number} [options.status] - The status code of this response. The response is
-   *     considered to be final iff the status is specified.
+   * @param {number} [options.status] - The status code of this response.
    * @param {Object} [options.params] - Params are metadata associated with the response.
    * @param {(Resource|Resource[])} [options.data] - The main data returned by this response.
    *     Either a single resource or an array of resources, depending on the query type.
    */
   init(options = {}) {
-    Utils.assert(Utils.isUndefined(options.status) || Utils.isNumber(options.status),
-        'status must be either a number or undefined');
+    this._constructOptions(availableOptions(), options);
+    this._super();
 
-    this.status = options.status;
-    this.params = options.params;
-    this.data = options.data;
+    // Public fields
+    this.status = this._status;
+    this.data = this._data;
+    this.params = this._params;
   },
 
   /**
-   * If there is no status, then this response is temporary and another response can be
-   * expected to be emitted by the query. Otherwise the response is final.
-   *
-   * @return {boolean} - Whether this response is considered to be final.
-   */
-  isFinal() {
-    return !Utils.isUndefined(this.status);
-  },
-
-  /**
-   * A response is successful if it has a 2xx status code. This method always returns false
-   * for temporary responses.
+   * A response is successful if it has a 2xx status code.
    *
    * @return {boolean} - Whether this response has a successful status code.
    */
   isSuccessful() {
     return Utils.isNumber(this.status) && this.status >= 200 && this.status < 300;
+  },
+
+  /**
+   * Provisional responses can be emitted by query filters to post progress about a query
+   * before it is complete. To create a provisional response just create a response with a
+   * null status.
+   */
+  isProvisional() {
+    return this.status == null;
   }
 }, {OK: 200, ERROR: 0});

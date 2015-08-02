@@ -18,20 +18,22 @@ var queryCombiner;
 
 describe('Optic Integration Tests', function() {
   function getResource(options = {}) {
-    return Optic.Resource.extend({
-      adapter: Optic.HttpAdapter.extend({
-        url: function() {
-          return '/resource1';
-        },
+    var Adapter = Optic.HttpAdapter.extend('TestHttpAdapter', {
+      url: function() {
+        return '/resource1';
+      },
 
-        parseData: function(httpResponse, query) {
-          if (query.getParams().id) {
-            return new Resource1(httpResponse.body);
-          } else {
-            return Utils.map(httpResponse.body.dataField, item => new Resource1(item));
-          }
+      parseData: function(httpResponse, query) {
+        if (query.getParams().id) {
+          return new Resource1(httpResponse.body);
+        } else {
+          return Utils.map(httpResponse.body.dataField, item => new Resource1(item));
         }
-      }),
+      }
+    });
+
+    return Optic.Resource.extend('TestResource', {
+      adapter: Adapter,
 
       filterSets: Utils.union(
         options.queryCache ? [options.queryCache] : [],
@@ -58,9 +60,11 @@ describe('Optic Integration Tests', function() {
 
   it('should fetch a single resource from an HTTP endpoint', function() {
     var doneFn = jasmine.createSpy('success');
+    var updateFn = jasmine.createSpy('update');
     Resource1 = getResource();
-    Resource1.fetch().params({id: '1234'}).submit(doneFn);
-    expect(doneFn.calls.count()).toEqual(1);
+    Resource1.fetch().params({id: '1234'}).submit(doneFn, updateFn);
+    expect(updateFn.calls.count()).toEqual(1);
+    expect(doneFn.calls.count()).toEqual(0);
 
     jasmine.Ajax.requests.mostRecent().respondWith({
       status: 200,
@@ -72,19 +76,21 @@ describe('Optic Integration Tests', function() {
     });
 
     var response = doneFn.calls.mostRecent().args[0];
-    expect(doneFn.calls.count()).toEqual(2);
-    expect(response.isFinal()).toBe(true);
+    expect(updateFn.calls.count()).toEqual(2);
+    expect(doneFn.calls.count()).toEqual(1);
+    expect(response.isProvisional()).toBe(false);
     expect(response.data.get('food')).toEqual('bar');
     expect(response.data.sampleInstanceMethod()).toEqual('hello');
   });
 
   it('should fetch a list of resources from an HTTP endpoint', function() {
     var doneFn = jasmine.createSpy('success');
+    var updateFn = jasmine.createSpy('update');
     var arg0;
     Resource1 = getResource();
 
-    Resource1.fetch().submit(doneFn);
-    expect(doneFn.calls.count()).toEqual(1);
+    Resource1.fetch().submit(doneFn, updateFn);
+    expect(updateFn.calls.count()).toEqual(1);
 
     jasmine.Ajax.requests.mostRecent().respondWith({
       status: 200,
@@ -97,59 +103,73 @@ describe('Optic Integration Tests', function() {
       }`
     });
 
-    expect(doneFn.calls.count()).toEqual(2);
+    expect(doneFn.calls.count()).toEqual(1);
     arg0 = doneFn.calls.mostRecent().args[0];
-    expect(arg0.isFinal()).toBe(true);
+    expect(arg0.isProvisional()).toBe(false);
     expect(arg0.data[0].get('id_')).toEqual('1234');
     expect(arg0.data[0].sampleInstanceMethod()).toEqual('hello');
   });
 
   it('should do basic caching with the QueryCache', function() {
     var doneFn = jasmine.createSpy('success');
+    var updateFn = jasmine.createSpy('update');
     Resource1 = getResource({queryCache: queryCache});
 
     // Initial query. Should fire an ajax request.
-    Resource1.fetch().params({id: 5}).submit(doneFn);
-    expect(doneFn.calls.count()).toEqual(1);
+    expect(updateFn.calls.count()).toEqual(0);
+    Resource1.fetch().params({id: 5}).submit(doneFn, updateFn);
+    expect(updateFn.calls.count()).toEqual(1);
     jasmine.Ajax.requests.mostRecent().respondWith({status: 200, responseText: '{}'});
-    expect(doneFn.calls.count()).toEqual(2);
+    expect(updateFn.calls.count()).toEqual(2);
+    expect(doneFn.calls.count()).toEqual(1);
     expect(jasmine.Ajax.requests.count()).toEqual(1);
 
     // An identical query should not fire another ajax request.
-    Resource1.fetch().params({id: 5}).submit(doneFn);
-    expect(doneFn.calls.count()).toEqual(4);
+    Resource1.fetch().params({id: 5}).submit(doneFn, updateFn);
+    expect(updateFn.calls.count()).toEqual(4);
+    expect(doneFn.calls.count()).toEqual(2);
     expect(jasmine.Ajax.requests.count()).toEqual(1);
 
     // This query has different params so a new ajax request should be sent.
-    Resource1.fetch().params({id: 6}).submit(doneFn);
-    expect(doneFn.calls.count()).toEqual(5);
+    Resource1.fetch().params({id: 6}).submit(doneFn, updateFn);
+    expect(updateFn.calls.count()).toEqual(5);
     expect(jasmine.Ajax.requests.count()).toEqual(2);
     jasmine.Ajax.requests.mostRecent().respondWith({status: 200, responseText: '{}'});
-    expect(doneFn.calls.count()).toEqual(6);
+    expect(updateFn.calls.count()).toEqual(6);
+    expect(doneFn.calls.count()).toEqual(3);
   });
 
   it('should do basic query combining with QueryCombiner', function() {
     var doneFn1 = jasmine.createSpy('success');
     var doneFn2 = jasmine.createSpy('success');
+    var updateFn1 = jasmine.createSpy('update');
+    var updateFn2 = jasmine.createSpy('update');
     Resource1 = getResource({queryCombiner: queryCombiner});
 
     // Initial query. Should fire an ajax request.
-    Resource1.fetch().params({id: 5}).submit(doneFn1);
-    expect(doneFn1.calls.count()).toEqual(1);
+    Resource1.fetch().params({id: 5}).submit(doneFn1, updateFn1);
+    expect(updateFn1.calls.count()).toEqual(1);
+    expect(updateFn2.calls.count()).toEqual(0);
     expect(jasmine.Ajax.requests.count()).toEqual(1);
 
     // An identical query. This should be linked with the previous one, and should not fire it's
     // own ajax request.
-    Resource1.fetch().params({id: 5}).submit(doneFn2);
-    expect(doneFn2.calls.count()).toEqual(1);
+    Resource1.fetch().params({id: 5}).submit(doneFn2, updateFn2);
+    expect(updateFn1.calls.count()).toEqual(1);
+    expect(updateFn2.calls.count()).toEqual(1);
     expect(jasmine.Ajax.requests.count()).toEqual(1);
 
     // The ajax query for the initial query now returns.
+    expect(doneFn1.calls.count()).toEqual(0);
+    expect(doneFn2.calls.count()).toEqual(0);
     jasmine.Ajax.requests.mostRecent().respondWith({status: 200, responseText: '{}'});
     expect(jasmine.Ajax.requests.count()).toEqual(1);
-    expect(doneFn1.calls.count()).toEqual(2);
-    expect(doneFn2.calls.count()).toEqual(2);
+    expect(updateFn1.calls.count()).toEqual(2);
+    expect(updateFn2.calls.count()).toEqual(2);
+    expect(doneFn1.calls.count()).toEqual(1);
+    expect(doneFn2.calls.count()).toEqual(1);
   });
 
-  it('should do basic resource linking with ResourceLinker');
+  it('should do basic resource linking with ResourceLinker', function() {
+  });
 });

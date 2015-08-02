@@ -7,7 +7,7 @@ import Response from '../core/Response';
 import URLBuilder from '../utils/URLBuilder';
 import * as Utils from '../core/Utils';
 
-export default Adapter.extend({
+export default Adapter.extend('HttpAdapter', {
   init(options) {
     this._super(options);
   },

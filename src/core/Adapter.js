@@ -9,7 +9,7 @@ var Actions = {
   FETCH: 'fetch'
 };
 
-var Adapter = OpticObject.extend({
+export default OpticObject.extend('Adapter', {
   init(options) {
     this._super(options);
   },
@@ -18,5 +18,3 @@ var Adapter = OpticObject.extend({
     this[query._action](query, callback);
   }
 }, {Actions: Actions});
-
-export default Adapter;

@@ -15,4 +15,8 @@ describe('Optic Interface', function() {
   it('should expose Optic.Resource', function() {
     expect(Optic.Resource).toEqual(Resource);
   });
+
+  it('should expose Optic.Response', function() {
+    expect(Optic.Response).toEqual(Response);
+  });
 });

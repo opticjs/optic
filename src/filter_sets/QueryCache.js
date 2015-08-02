@@ -1,12 +1,12 @@
 import FilterSet from '../core/FilterSet';
 import Query from '../core/Query';
 
-var QueryCache = FilterSet.extend({
+export default FilterSet.extend('QueryCache', {
   init() {
     this._responses = {};
   },
 
-  filters() {
+  queryFilters() {
     return [
       {
         from: Query.States.IDLE,
@@ -44,5 +44,3 @@ var QueryCache = FilterSet.extend({
     return {};
   }
 });
-
-export default QueryCache;

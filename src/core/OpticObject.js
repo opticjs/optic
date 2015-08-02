@@ -58,10 +58,14 @@ OpticObject.prototype.toString = function(keys) {
   return `<Object:${Hash.combinedHashFn(JSON.stringify(convert(this, keys)))}>`;
 };
 
+OpticObject.prototype.copy = function() {
+
+};
+
 OpticObject.prototype.init = () => {};
 
 // Copied from http://ejohn.org/blog/simple-javascript-inheritance/
-var extend = function(props, statics) {
+var extend = function(className, props, statics) {
   var newPrototype = new this();
   var _super = this.prototype;
 
@@ -81,10 +85,12 @@ var extend = function(props, statics) {
   }
 
   // The new class constructor that calls through to the `init` method.
-  function NewClass() {
-    this._instanceId = Utils.uid();
-    this.init && this.init.apply(this, arguments);
-  }
+  var NewClass = eval(`(
+    function ${className}() {
+      this._instanceId = Utils.uid();
+      this.init && this.init.apply(this, arguments);
+    }
+  )`);
 
   // Copy statics
   Utils.each(statics, (val, key) => {

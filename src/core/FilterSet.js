@@ -13,13 +13,13 @@ const filterDefaults = {
   filter: (query, cb) => cb()
 };
 
-var FilterSet = OpticObject.extend({
-  filters() {
+export default OpticObject.extend('FilterSet', {
+  queryFilters() {
     return [];
   },
 
   getFinalFilters() {
-    return Utils.map(this.filters(), filter => Utils.extend(filterDefaults, filter));
+    return Utils.map(this.queryFilters(), filter => Utils.extend(filterDefaults, filter));
   },
 
   getInboundFilters() {
@@ -30,9 +30,11 @@ var FilterSet = OpticObject.extend({
     return Utils.select(this.getFinalFilters(), filter => filter.direction === Directions.OUTBOUND);
   },
 
+  getResponseFilters() {
+    return this.responseFilters && this.responseFilters() || [];
+  },
+
   toString() {
     return `<FilterSet::${this._instanceId}>`;
   }
 }, {Directions: Directions, defaults: filterDefaults});
-
-export default FilterSet;
