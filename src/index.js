@@ -4,10 +4,12 @@ import HttpAdapter from './adapters/HttpAdapter';
 import Query from './core/Query';
 import Resource from './core/Resource';
 import Response from './core/Response';
+import * as Utils from './core/Utils';
 
 export default {
   Resource: Resource,
   Query: Query,
   Response: Response,
-  HttpAdapter: HttpAdapter
+  HttpAdapter: HttpAdapter,
+  Utils: Utils
 };
