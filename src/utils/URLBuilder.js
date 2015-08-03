@@ -33,11 +33,11 @@ export default {
   build(options) {
     var protocol = options.protocol ? options.protocol + '://' : '';
     var searchQueryParams = Utils.map(
-      options.search,
-      (val, key) => 'key=' + encodeURIComponent(val)
+      Object.keys(options.search),
+      key => `${key}=${encodeURIComponent(options.search[key])}`
     );
 
-    return [
+    var a = [
       // Protocol and host.
       options.origin || [protocol, host].join(''),
 
@@ -53,40 +53,57 @@ export default {
       // Hash fragment
       options.hash ? '#' + options.hash : ''
     ].join('');
+    console.log(a);
+    return a;
   }
 };
 
+// TODO(lopatin) This method is so terrible and wrong.
 function splitIntoSections(template) {
-  var sections = [], startIndex = null, isToken = null;
-  for (var i = 0; i < template.length; i++) {
-    let char = template[i],
-        section = null;
+  return template.split('/').map((section, i) => ({
+    type: SectionTypes.STRING,
+    val: section,
+    slash: !!i
+  }));
+  // var sections = [], startIndex = null, isToken = null;
+  // for (var i = 0; i < template.length; i++) {
+  //   let char = template[i],
+  //       section = null;
 
-    if (isToken && char === '}') {
-      let str = template.slice(startIndex, i),
-          slash = str[0] === '/';
-      section = {type: SectionTypes.LOCAL, val: str.slice(slash ? 1 : 0), slash: slash};
-    } else if (isToken === false && char === '{') {
-      section = {type: SectionTypes.STRING, val: template.slice(startIndex, i)};
-    }
 
-    if (section) {
-      sections.push(section);
-      isToken = startIndex = null;
-    }
+  //   if (isToken && char === '}') {
+  //     let str = template.slice(startIndex, i),
+  //         slash = str[0] === '/';
+  //     section = {type: SectionTypes.LOCAL, val: str.slice(slash ? 1 : 0), slash: slash};
+  //   } else if (!isToken && char === '{') {
+  //     section = {type: SectionTypes.STRING, val: template.slice(startIndex, i)};
+  //   } else if (!isToken && char === '/') {
+  //     section = {type: SectionTypes.STRING, val: template.slice(startIndex + 1, i), slash: true};
+  //   } else if (i + 1 === template.length) {
+  //     section = {type: SectionTypes.STRING, val: template.slice(startIndex + 1, i + 1)};
+  //   }
 
-    if (startIndex === null) {
-      startIndex = i;
-      isToken = char === '{';
-    }
-  }
+  //   if (section) {
+  //     sections.push(section);
+  //     isToken = startIndex = null;
+  //   }
+
+  //   if (startIndex === null) {
+  //     startIndex = i;
+  //     isToken = char === '{';
+  //   }
+  // }
+
+  // console.log(sections);
+
+  // return sections;
 }
 
 function transformSection(section, options) {
   if (section.type === SectionTypes.LOCAL) {
     return (section.slash ? '/' : '') + encodeURIComponent(options.locals[section.val]);
   } else if (section.type === SectionTypes.STRING) {
-    return encodeURIComponent(section.val);
+    return (section.slash ? '/' : '') + encodeURIComponent(section.val);
   } else {
     throw 'Missing or unrecognized section type';
   }

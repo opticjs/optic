@@ -22,7 +22,11 @@ describe('Optic Integration Tests', function() {
   function getResource(options = {}) {
     var Adapter = Optic.HttpAdapter.extend('TestHttpAdapter', {
       url: function() {
-        return '/resource1';
+        return {
+          origin: 'https://opticjs.com',
+          template: '/api/bleh',
+          search: {foo: 'bar', food: 'food car'}
+        };
       },
 
       parseData: function(httpResponse, query) {
