@@ -1,10 +1,10 @@
 {
   "name": "optic",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "main": "lib/index.js",
   "scripts": {
-    "prepublish": "rm -rf dist tmp lib && NODE_ENV=production broccoli build lib",
-    "start": "NODE_ENV=development broccoli serve"
+    "prepublish": "scripts/prepublish",
+    "start": "scripts/start"
   },
   "devDependencies": {
     "babelify": "^6.0.2",
@@ -15,6 +15,7 @@
     "broccoli-fast-browserify": "^0.2.5",
     "broccoli-funnel": "^0.2.3",
     "broccoli-merge-trees": "^0.2.1",
-    "glob": "^5.0.5"
+    "glob": "^5.0.5",
+    "rimraf": "^2.3.4"
   }
 }
