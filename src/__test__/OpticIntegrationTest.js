@@ -179,8 +179,6 @@ describe('Optic Integration Tests', function() {
     var collectionDoneFn = jasmine.createSpy('success');
     Resource1 = getResource({resourceLinker: resourceLinker});
 
-    console.log(1);
-
     Resource1.fetch().submit(collectionDoneFn);
     jasmine.Ajax.requests.mostRecent().respondWith({
       status: 200,
@@ -192,7 +190,6 @@ describe('Optic Integration Tests', function() {
         "dataField": [{"id": "1234", "title": "hi"}, {"id": "13", "title": "hello"}]
       }`
     });
-    console.log(2);
 
     // Then request one of the items in the collection independently.
     var resourceDoneFn = jasmine.createSpy('success');
@@ -202,7 +199,6 @@ describe('Optic Integration Tests', function() {
       contentType: 'application/json',
       responseText: `{"id": "1234", "title": "hi"}`
     });
-    console.log(3);
 
     // The resulting resources should be triple equal to each other
     expect(collectionDoneFn.calls.mostRecent().args[0].data[0] ===

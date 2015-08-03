@@ -3,7 +3,8 @@
   "version": "0.0.12",
   "main": "lib/index.js",
   "scripts": {
-    "prepublish": "make build_lib"
+    "prepublish": "rm -rf dist tmp lib && NODE_ENV=production broccoli build lib",
+    "start": "NODE_ENV=development broccoli serve"
   },
   "devDependencies": {
     "babelify": "^6.0.2",
