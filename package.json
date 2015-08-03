@@ -4,7 +4,8 @@
   "main": "lib/index.js",
   "scripts": {
     "prepublish": "scripts/prepublish",
-    "start": "scripts/start"
+    "start": "scripts/start",
+    "build": "scripts/build"
   },
   "devDependencies": {
     "babelify": "^6.0.2",
