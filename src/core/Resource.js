@@ -17,6 +17,14 @@ var Resource = OpticObject.extend('Resource', {
 
   get(key) {
     return this._attributes[key];
+  },
+
+  toString(onlyAttributes) {
+    if (onlyAttributes) {
+      return this._super(['_attributes']);
+    } else {
+      return this._super();
+    }
   }
 });
 

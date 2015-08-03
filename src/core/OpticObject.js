@@ -55,7 +55,8 @@ OpticObject.prototype.toString = function(keys) {
     }
   };
 
-  return `<Object:${Hash.combinedHashFn(JSON.stringify(convert(this, keys)))}>`;
+  return `<${this.constructor.name || 'Object'}:\
+${Hash.combinedHashFn(JSON.stringify(convert(this, keys)))}>`;
 };
 
 OpticObject.prototype.copy = function() {

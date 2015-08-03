@@ -172,6 +172,20 @@ export function isArray(val) {
   return val instanceof Array;
 }
 
+export function isArrayOf(val, type) {
+  if (!isArray(val)) {
+    return false;
+  }
+
+  for (let i = 0; i < val.length; i++) {
+    if (!val[i] instanceof type) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 export function isNull(val) {
   return val === null;
 }

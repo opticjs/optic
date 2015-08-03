@@ -2,6 +2,7 @@ import OpticObject from '../core/OpticObject';
 import Optic from '../index';
 import QueryCache from '../filter_sets/QueryCache';
 import QueryCombiner from '../filter_sets/QueryCombiner';
+import ResourceLinker from '../filter_sets/ResourceLinker';
 import * as Utils from '../core/Utils';
 // import Query from '../core/Query';
 // import Response from '../core/Response'
@@ -15,6 +16,7 @@ import * as Utils from '../core/Utils';
 var Resource1;
 var queryCache;
 var queryCombiner;
+var resourceLinker;
 
 describe('Optic Integration Tests', function() {
   function getResource(options = {}) {
@@ -37,7 +39,8 @@ describe('Optic Integration Tests', function() {
 
       filterSets: Utils.union(
         options.queryCache ? [options.queryCache] : [],
-        options.queryCombiner ? [options.queryCombiner] : []
+        options.queryCombiner ? [options.queryCombiner] : [],
+        options.resourceLinker ? [options.resourceLinker] : []
       ),
 
       sampleInstanceMethod: function() {
@@ -52,6 +55,7 @@ describe('Optic Integration Tests', function() {
     // Setup filter sets
     queryCache = new QueryCache();
     queryCombiner = new QueryCombiner();
+    resourceLinker = new ResourceLinker();
   });
 
   afterEach(function() {
@@ -171,5 +175,37 @@ describe('Optic Integration Tests', function() {
   });
 
   it('should do basic resource linking with ResourceLinker', function() {
+    // First request a collection of stuff.
+    var collectionDoneFn = jasmine.createSpy('success');
+    Resource1 = getResource({resourceLinker: resourceLinker});
+
+    console.log(1);
+
+    Resource1.fetch().submit(collectionDoneFn);
+    jasmine.Ajax.requests.mostRecent().respondWith({
+      status: 200,
+      contentType: 'application/json',
+      responseText: `{
+        "food": "bar",
+        "foo": 5,
+        "bool": true,
+        "dataField": [{"id": "1234", "title": "hi"}, {"id": "13", "title": "hello"}]
+      }`
+    });
+    console.log(2);
+
+    // Then request one of the items in the collection independently.
+    var resourceDoneFn = jasmine.createSpy('success');
+    Resource1.fetch().params({'id': '1234'}).submit(resourceDoneFn);
+    jasmine.Ajax.requests.mostRecent().respondWith({
+      status: 200,
+      contentType: 'application/json',
+      responseText: `{"id": "1234", "title": "hi"}`
+    });
+    console.log(3);
+
+    // The resulting resources should be triple equal to each other
+    expect(collectionDoneFn.calls.mostRecent().args[0].data[0] ===
+        resourceDoneFn.calls.mostRecent().args[0].data).toBe(true);
   });
 });
