@@ -6,6 +6,9 @@ clean:
 build: clean
 	@broccoli build dist
 
+build_lib: clean
+	@NODE_ENV=production broccoli build lib
+
 serve: clean
 	@broccoli serve
 

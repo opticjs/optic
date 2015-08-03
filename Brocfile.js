@@ -31,4 +31,8 @@ var testSuite = browserify('src', {
   }
 });
 
-module.exports = mergeTrees([testDirectory, testSuite]);
+if (process.env.NODE_ENV === 'development') {
+  module.exports = mergeTrees([testDirectory, testSuite]);
+} else {
+  module.exports = babel('src');
+}
