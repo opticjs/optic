@@ -15,7 +15,7 @@ export default Adapter.extend('HttpAdapter', {
   create(query, callback) {
     var request = new HttpRequest()
         .post(this._buildURL(query))
-        .headers(this._getHeaders())
+        .headers(this._getHeaders(query))
         .data(query.getData());
 
     send(request, callback, httpResponse => {
@@ -30,7 +30,7 @@ export default Adapter.extend('HttpAdapter', {
   update(query, callback) {
     var request = new HttpRequest()
         .put(this._buildURL(query))
-        .headers(this._getHeaders())
+        .headers(this._getHeaders(query))
         .data(query.getData());
 
     send(request, callback, httpResponse => {
@@ -45,7 +45,7 @@ export default Adapter.extend('HttpAdapter', {
   remove(query, callback) {
     var request = new HttpRequest()
         .del(this._buildURL(query))
-        .headers(this._getHeaders())
+        .headers(this._getHeaders(query))
         .data(query.getData());
 
     send(request, callback, httpResponse => {
@@ -59,7 +59,7 @@ export default Adapter.extend('HttpAdapter', {
   fetch(query, callback) {
     var request = new HttpRequest()
         .get(this._buildURL(query))
-        .headers(this._getHeaders())
+        .headers(this._getHeaders(query))
         .data(query.getData());
 
     send(request, callback, httpResponse => {
