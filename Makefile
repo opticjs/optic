@@ -1,7 +1,7 @@
 .PHONY: build clean serve
 
 clean:
-	@rm -rf dist tmp
+	@rm -rf dist tmp lib
 
 build: clean
 	@broccoli build dist
