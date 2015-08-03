@@ -1,5 +1,6 @@
 'use strict';
 
+import FilterSet from './core/FilterSet';
 import HttpAdapter from './adapters/HttpAdapter';
 import Query from './core/Query';
 import Resource from './core/Resource';
@@ -15,6 +16,7 @@ export default {
   Response: Response,
   HttpAdapter: HttpAdapter,
   Utils: Utils,
+  FilterSet: FilterSet,
   FilterSets: {
     QueryCache: QueryCache,
     QueryCombiner: QueryCombiner,

@@ -124,6 +124,10 @@ emission of the final non provisional response.`);
     return this._params;
   },
 
+  replaceParams(params) {
+    this._params = params;
+  },
+
   getData() {
     return this._data;
   },
