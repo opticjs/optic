@@ -20,6 +20,21 @@ var resourceLinker;
 
 describe('Optic Integration Tests', function() {
   function getResource(options = {}) {
+
+    var AuthFilterSet = Optic.FilterSet.extend('AuthFilterSet', {
+      queryFilters() {
+        return [{
+          to: Optic.Query.States.SUBMITTING,
+          filter: (query, emitResponse, cb) => {
+            query.replaceParams(Utils.extend({}, query.getParams(), {
+              Authorization: `Bearer foobartoken`
+            }));
+            cb();
+          }
+        }];
+      }
+    });
+
     var Adapter = Optic.HttpAdapter.extend('TestHttpAdapter', {
       url: function() {
         return {
@@ -35,6 +50,12 @@ describe('Optic Integration Tests', function() {
         } else {
           return Utils.map(httpResponse.body.dataField, item => new Resource1(item));
         }
+      },
+
+      headers: function(query) {
+        return {
+          Authorization: query.getParams().Authorization
+        };
       }
     });
 
@@ -42,6 +63,7 @@ describe('Optic Integration Tests', function() {
       adapter: Adapter,
 
       filterSets: Utils.union(
+        [new AuthFilterSet()],
         options.queryCache ? [options.queryCache] : [],
         options.queryCombiner ? [options.queryCombiner] : [],
         options.resourceLinker ? [options.resourceLinker] : []

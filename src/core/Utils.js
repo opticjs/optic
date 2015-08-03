@@ -80,17 +80,14 @@ export function last(list) {
  * Return a copy of the object extended with all the properites of the other
  * objects in the parameters.
  */
-export function extend(obj) {
-  var extensions = Array.prototype.slice.call(arguments, 1);
-  if (extensions.length === 1) {
-    let o = clone(obj);
-    for (var key in extensions[0]) {
-      o[key] = extensions[0][key];
+export function extend(obj, ...extensions) {
+  var o = clone(obj);
+  extensions.forEach(extension => {
+    for (var key in extension) {
+      o[key] = extension[key];
     }
-    return o;
-  } else {
-    return extend(obj, extend(extensions[0], extensions.slice(1)));
-  }
+  });
+  return o;
 }
 
 export function merge(objects) {
