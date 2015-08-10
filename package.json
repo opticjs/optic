@@ -3,6 +3,7 @@
   "version": "0.0.17",
   "main": "lib/index.js",
   "scripts": {
+    "prepublish": "scripts/prepublish",
     "start": "scripts/start",
     "build": "scripts/build"
   },
