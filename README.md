@@ -1,2 +1,1 @@
-# optic
-Declarative data fetching for React
+# Optic
