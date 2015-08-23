@@ -3,8 +3,8 @@ import Query from '../core/Query';
 import * as Utils from '../core/Utils';
 
 export default FilterSet.extend('QueryThrottle', {
-  init() {
-    this._queryBuckets = {};
+  init(wait = 100) {
+    this._wait = wait;
   },
 
   queryFilters() {
@@ -12,7 +12,7 @@ export default FilterSet.extend('QueryThrottle', {
       {
         from: Query.States.IDLE,
         filter: (query, emitResponse, cb) => {
-          throttle(cb);
+          throttle(cb, this._wait)();
         }
       }
     ];
