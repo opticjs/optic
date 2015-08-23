@@ -5,9 +5,7 @@ import * as Utils from '../core/Utils';
 export default FilterSet.extend('QueryThrottle', {
   init(wait = 100) {
     this._wait = wait;
-    this._throttle = throttle((fn) => {
-      console.log('hello');
-      console.log(fn);
+    this._throttled = throttle((fn) => {
       fn();
     }, this._wait);
   },
@@ -17,7 +15,17 @@ export default FilterSet.extend('QueryThrottle', {
       {
         from: Query.States.IDLE,
         filter: (query, emitResponse, cb) => {
-          this._throttle(cb);
+          this._throttled(() => {
+            this._callbackTriggered = true;
+            cb();
+          });
+
+          // Clean up after any throttled requests
+          setTimeout(() => {
+            if (!this._callbackTriggered) {
+              cb(Query.States.CANCELLED);
+            }
+          }, this._wait + 100);
         }
       }
     ];
@@ -58,6 +66,8 @@ function throttle(func, wait, options) {
       if (!timeout) context = args = null;
     } else if (!timeout && options.trailing !== false) {
       timeout = setTimeout(later, remaining);
+    } else {
+      options.onSuppress && options.onSuppress();
     }
     return result;
   };
