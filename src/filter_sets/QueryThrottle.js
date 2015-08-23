@@ -6,6 +6,8 @@ export default FilterSet.extend('QueryThrottle', {
   init(wait = 100) {
     this._wait = wait;
     this._throttle = throttle((fn) => {
+      console.log('hello');
+      console.log(fn);
       fn();
     }, this._wait);
   },
