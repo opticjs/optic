@@ -14,6 +14,7 @@ export default FilterSet.extend('QueryThrottle', {
     return [
       {
         from: Query.States.IDLE,
+        direction: 'outbound',
         filter: (query, emitResponse, cb) => {
           this._throttled(() => {
             this._callbackTriggered = true;
