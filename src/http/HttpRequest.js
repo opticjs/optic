@@ -12,7 +12,8 @@ const RequestStates = {
 
 // TODO: This file is pretty minimal at the moment. It could use some improvements like
 // making sure invalid states can't be reached and general sanity checking. This class
-// should be a bulletproof Brinks truck. Right now it's a Mini Cooper.
+// should be a bulletproof Brinks truck. Right now it's a smart car:
+// http://ecogeek.org/wp-content/uploads/2006/07/electric_smart_car.jpg
 
 export default class HttpRequest {
   constructor() {

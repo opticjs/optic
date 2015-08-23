@@ -2,9 +2,13 @@ import FilterSet from '../core/FilterSet';
 import Resource from '../core/Resource';
 import * as Utils from '../core/Utils';
 
+/**
+ * The ResourceLinker filter set monitors all responses and ensures that identical resources that
+ * are spread across multiple responses are still comparable with reference equality (===).
+ */
 export default FilterSet.extend('ResourceLinker', {
   init() {
-    this._refTimeout = 60 * 1000; // ms
+    this._refTimeout = 60 * 1000;
     this._resourceRefs = {};
   },
 

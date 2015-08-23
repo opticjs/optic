@@ -1,6 +1,10 @@
 import FilterSet from '../core/FilterSet';
 import Query from '../core/Query';
 
+/**
+ * Saves a reference to every response that passes through this filter, keyed by the toString()
+ * of the associated query.
+ */
 export default FilterSet.extend('QueryCache', {
   init() {
     this._responses = {};

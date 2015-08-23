@@ -8,6 +8,7 @@ import Response from './core/Response';
 import * as Utils from './core/Utils';
 import QueryCache from './filter_sets/QueryCache';
 import QueryCombiner from './filter_sets/QueryCombiner';
+import QueryThrottle from './filter_sets/QueryThrottle';
 import ResourceLinker from './filter_sets/ResourceLinker';
 
 export default {
@@ -20,6 +21,7 @@ export default {
   FilterSets: {
     QueryCache: QueryCache,
     QueryCombiner: QueryCombiner,
+    QueryThrottle: QueryThrottle,
     ResourceLinker: ResourceLinker
   }
 };
