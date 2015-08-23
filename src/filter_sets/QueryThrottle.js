@@ -5,6 +5,9 @@ import * as Utils from '../core/Utils';
 export default FilterSet.extend('QueryThrottle', {
   init(wait = 100) {
     this._wait = wait;
+    this._throttle = throttle((fn) => {
+      fn();
+    }, this._wait);
   },
 
   queryFilters() {
@@ -12,7 +15,7 @@ export default FilterSet.extend('QueryThrottle', {
       {
         from: Query.States.IDLE,
         filter: (query, emitResponse, cb) => {
-          throttle(cb, this._wait)();
+          this._throttle(cb);
         }
       }
     ];
