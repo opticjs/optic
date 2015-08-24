@@ -213,13 +213,14 @@ emission of the final non provisional response.`);
    * Run the response through all filters and add it to the stack of responses for this query.
    */
   _registerResponse(response) {
+    response.requestedAt = this.submittedAt;
+    
     Utils.each(this._getSortedResponseFilters(), filter => {
       if (response) {
         response = filter(response);
       }
     });
     if (response) {
-      response.requestedAt = this.submittedAt;
       this._responses.push(response);
 
       this._onQueryUpdate && this._onQueryUpdate(response);
