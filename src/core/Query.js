@@ -68,6 +68,9 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
 
     // Either null or a reference to the current query filter function being run.
     this._currentQueryFilterFn = null;
+
+    // Timestamp
+    this.submittedAt = null;
   },
 
   clone() {
@@ -86,6 +89,8 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
 
     // Response with initial temporary response before all other work starts
     this._registerResponse(new Response());
+
+    this.submittedAt = new Date().getTime();
 
     // Kick off the submission by starting a transition to the SUBMITTING state. When this
     // operation completes, the state that the query lands on is NOT guaranteed to be the
@@ -209,11 +214,16 @@ emission of the final non provisional response.`);
    */
   _registerResponse(response) {
     Utils.each(this._getSortedResponseFilters(), filter => {
-      response = filter(response) || response;
+      if (response) {
+        response = filter(response);
+      }
     });
-    this._responses.push(response);
+    if (response) {
+      response.requestedAt = this.submittedAt;
+      this._responses.push(response);
 
-    this._onQueryUpdate && this._onQueryUpdate(response);
+      this._onQueryUpdate && this._onQueryUpdate(response);
+    }
   }
 }), {States: States});
 

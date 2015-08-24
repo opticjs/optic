@@ -16,7 +16,7 @@ export default FilterSet.extend('ResourceLinker', {
     return [
       response => {
         if (!response.data) {
-          return;
+          return response;
         }
 
         // A function that takes in a resource and returns the linked resource if the ref

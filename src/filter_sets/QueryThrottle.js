@@ -2,9 +2,17 @@ import FilterSet from '../core/FilterSet';
 import Query from '../core/Query';
 import * as Utils from '../core/Utils';
 
+const availableOptions = function() {
+  return {
+    allowOutdatedResponses: false
+  };
+};
+
 export default FilterSet.extend('QueryThrottle', {
-  init(wait = 100) {
+  init(wait = 100, options) {
+    this._constructOptions(availableOptions, options);
     this._wait = wait;
+    this._latestRequestedAt = 0;
     this._throttled = throttle((fn) => {
       fn();
     }, this._wait);
@@ -28,6 +36,19 @@ export default FilterSet.extend('QueryThrottle', {
             }
           }, this._wait + 100);
         }
+      }
+    ];
+  },
+
+  responseFilters() {
+    return [
+      response => {
+        if (!this._allowOutdatedResponses && response.requestedAt < this._latestRequestedAt) {
+          return null;
+        }
+        
+        this._latestRequestedAt = response.requestedAt;
+        return response;
       }
     ];
   },
