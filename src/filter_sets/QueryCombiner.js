@@ -46,8 +46,11 @@ export default FilterSet.extend('QueryCombiner', {
 
           if (bucket && bucket.originalQuery === query) {
             Utils.each(bucket.callbacks, cbs => {
-              cbs.emitResponse(query.getFinalResponse());
-              cbs.cb(Query.States.DONE);
+              var response = query.getFinalResponse();
+              if (response) {
+                cbs.emitResponse(query.getFinalResponse());
+                cbs.cb(Query.States.DONE);
+              }
             });
             this._queryBuckets[key] = null;
           }
