@@ -107,7 +107,9 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
       });
 
       // We're done!
-      this._onQueryComplete(finalResponse);
+      if (finalResponse) {
+        this._onQueryComplete(finalResponse);
+      }
     });
   },
 
@@ -206,7 +208,7 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
         response = filter(response);
       }
     });
-    
+
     if (response) {
       this._responses.push(response);
       this._onQueryUpdate && this._onQueryUpdate(response);
