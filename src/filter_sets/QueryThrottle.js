@@ -44,7 +44,7 @@ export default FilterSet.extend('QueryThrottle', {
     return [
       response => {
         if (!this._allowOutdatedResponses && response.requestedAt < this._latestRequestedAt) {
-          response.cancel();
+          response.status = -1;
         } else {
           this._latestRequestedAt = response.requestedAt;
         }

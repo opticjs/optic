@@ -106,14 +106,6 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
         }
       });
 
-      // Filter out canceled responses
-      var finalResponse = null;
-      Utils.each(finalResponses, response => {
-        if (response.status !== -1) {
-          finalResponse = response;
-        }
-      });
-
       // Throw an error if there were no non-provisional responses fired. The completion
       // callback must be invoked with a non-provisional response.
       if (finalResponses.length === 0) {
@@ -122,7 +114,7 @@ completion.`);
       }
 
       // We're done!
-      this._onQueryComplete(finalResponse);
+      this._onQueryComplete(Utils.last(finalResponses));
     });
   },
 
