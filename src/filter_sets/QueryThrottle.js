@@ -21,12 +21,12 @@ export default FilterSet.extend('QueryThrottle', {
             cb();
           });
 
-          // Clean up after any throttled requests
+          // Clean up after any swallowed requests
           setTimeout(() => {
             if (!this._callbackTriggered) {
               cb(Query.States.CANCELLED);
             }
-          }, this._wait + 100);
+          }, this._wait + 1);
         }
       }
     ];
