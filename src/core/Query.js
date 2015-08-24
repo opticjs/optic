@@ -99,25 +99,26 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
       // The filter chain has completed and the query is considered done. The filters should
       // have emitted at least one non-provisional response. The latest one of these will be
       // used as the final response and sent to the main query completion callback.
-      var finalResponse = null;
+      var finalResponses = [];
       Utils.each(this.getResponses(), response => {
         if (!response.isProvisional()) {
+          finalResponses.push(response);
+        }
+      });
+
+      // Filter out canceled responses
+      var finalResponse = null;
+      Utils.each(finalResponses, response => {
+        if (response.status !== -1) {
           finalResponse = response;
         }
       });
 
       // Throw an error if there were no non-provisional responses fired. The completion
       // callback must be invoked with a non-provisional response.
-      if (!finalResponse) {
+      if (finalResponses.length === 0) {
         throw new Error(`A query must emit at least one non-provisional response before \
 completion.`);
-      }
-
-      // If there were some provisional responses emitted after the last non-provisional one
-      // was emitted, then warn.
-      if (finalResponse !== Utils.last(this.getResponses())) {
-        Logger.warn(`There were provisional responses emitted for the query after the \
-emission of the final non provisional response.`);
       }
 
       // We're done!
@@ -214,17 +215,12 @@ emission of the final non provisional response.`);
    */
   _registerResponse(response) {
     response.requestedAt = this.submittedAt;
-    
-    Utils.each(this._getSortedResponseFilters(), filter => {
-      if (response) {
-        response = filter(response);
-      }
-    });
-    if (response) {
-      this._responses.push(response);
 
-      this._onQueryUpdate && this._onQueryUpdate(response);
-    }
+    Utils.each(this._getSortedResponseFilters(), filter => {
+      response = filter(response);
+    });
+    this._responses.push(response);
+    this._onQueryUpdate && this._onQueryUpdate(response);
   }
 }), {States: States});
 

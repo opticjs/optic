@@ -50,5 +50,9 @@ export default OpticObject.extend('Response', {
    */
   isProvisional() {
     return this.status == null;
+  },
+
+  cancel() {
+    this.status = -1;
   }
-}, {OK: 200, ERROR: 0});
+}, {OK: 200, ERROR: 0, CANCELED: -1});
