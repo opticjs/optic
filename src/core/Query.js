@@ -99,22 +99,15 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
       // The filter chain has completed and the query is considered done. The filters should
       // have emitted at least one non-provisional response. The latest one of these will be
       // used as the final response and sent to the main query completion callback.
-      var finalResponses = [];
+      var finalResponse = null;
       Utils.each(this.getResponses(), response => {
         if (!response.isProvisional()) {
-          finalResponses.push(response);
+          finalResponse = response;
         }
       });
 
-      // Throw an error if there were no non-provisional responses fired. The completion
-      // callback must be invoked with a non-provisional response.
-      if (finalResponses.length === 0) {
-        throw new Error(`A query must emit at least one non-provisional response before \
-completion.`);
-      }
-
       // We're done!
-      this._onQueryComplete(Utils.last(finalResponses));
+      this._onQueryComplete(finalResponse);
     });
   },
 
@@ -209,10 +202,15 @@ completion.`);
     response.requestedAt = this.submittedAt;
 
     Utils.each(this._getSortedResponseFilters(), filter => {
-      response = filter(response);
+      if (response) {
+        response = filter(response);
+      }
     });
-    this._responses.push(response);
-    this._onQueryUpdate && this._onQueryUpdate(response);
+    
+    if (response) {
+      this._responses.push(response);
+      this._onQueryUpdate && this._onQueryUpdate(response);
+    }
   }
 }), {States: States});
 

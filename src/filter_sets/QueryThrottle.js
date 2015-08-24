@@ -44,11 +44,10 @@ export default FilterSet.extend('QueryThrottle', {
     return [
       response => {
         if (!this._allowOutdatedResponses && response.requestedAt < this._latestRequestedAt) {
-          response.status = -1;
-        } else {
-          this._latestRequestedAt = response.requestedAt;
+          return null;
         }
-
+        
+        this._latestRequestedAt = response.requestedAt;
         return response;
       }
     ];
