@@ -26,7 +26,7 @@ export default FilterSet.extend('QueryThrottle', {
             if (!this._callbackTriggered) {
               cb(Query.States.CANCELLED);
             }
-          }, this._wait + 1);
+          }, this._wait + 100);
         }
       }
     ];
