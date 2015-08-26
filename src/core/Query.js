@@ -194,9 +194,9 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
    */
   _addFilterSet(filterSet) {
     this._filterSets = Utils.union(this._filterSets, [filterSet]);
-    Utils.each(Utils.keys(filterSet.queryMethods(), key => {
+    Utils.each(Utils.keys(filterSet.queryMethods()), key => {
       this[key] = filterSet.queryMethods()[key].bind(this);
-    }));
+    });
   },
 
   /**
@@ -204,9 +204,9 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
    */
   _removeFilterSet(filterSet) {
     this._filterSets = Utils.without(this._filterSets, filterSet);
-    Utils.each(Utils.keys(filterSet.queryMethods(), key => {
+    Utils.each(Utils.keys(filterSet.queryMethods()), key => {
       delete this[key];
-    }));
+    });
   },
 
   /**
