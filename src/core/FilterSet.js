@@ -18,6 +18,10 @@ export default OpticObject.extend('FilterSet', {
     return [];
   },
 
+  queryMethods() {
+    return {};
+  },
+
   getFinalFilters() {
     return Utils.map(this.queryFilters(), filter => Utils.extend(filterDefaults, filter));
   },

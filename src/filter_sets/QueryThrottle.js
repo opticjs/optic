@@ -51,10 +51,6 @@ export default FilterSet.extend('QueryThrottle', {
         }
       }
     ];
-  },
-
-  queryMethods() {
-    return {};
   }
 });
 

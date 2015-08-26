@@ -189,12 +189,24 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
     return Utils.flatten([this._filterSets, [submissionFilterSet]]);
   },
 
+  /**
+   * This should be the only way that a filter set is added to the query.
+   */
   _addFilterSet(filterSet) {
     this._filterSets = Utils.union(this._filterSets, [filterSet]);
+    Utils.each(Utils.keys(filterSet.queryMethods(), key => {
+      this[key] = filterSet.queryMethods()[key].bind(this);
+    }));
   },
 
+  /**
+   * This should be the only way that a filter set is removed from the query.
+   */
   _removeFilterSet(filterSet) {
     this._filterSets = Utils.without(this._filterSets, filterSet);
+    Utils.each(Utils.keys(filterSet.queryMethods(), key => {
+      delete this[key];
+    }));
   },
 
   /**

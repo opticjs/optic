@@ -42,9 +42,5 @@ export default FilterSet.extend('QueryCache', {
         }
       }
     ];
-  },
-
-  queryMethods() {
-    return {};
   }
 });

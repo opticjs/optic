@@ -59,9 +59,5 @@ export default FilterSet.extend('QueryCombiner', {
         }
       }
     ];
-  },
-
-  queryMethods() {
-    return {};
   }
 });

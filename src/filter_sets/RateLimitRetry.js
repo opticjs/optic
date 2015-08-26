@@ -5,14 +5,16 @@ import * as Utils from '../core/Utils';
 
 const availableOptions = function() {
   return {
-    retryLimit: false
+    retryLimit: 3,
+    retryDelay: 1000
   };
 };
 
-export default FilterSet.extend('QueryThrottle', {
+export default FilterSet.extend('RateLimitRetry', {
   init(options) {
-    this._constructOptions(availableOptions, options);
     this._retryCounts = new WeakMap();
+    this._retryLimits = new WeakMap();
+    this._constructOptions(availableOptions, options);
   },
 
   queryFilters() {
@@ -25,11 +27,12 @@ export default FilterSet.extend('QueryThrottle', {
           var response = query.getFinalResponse();
           if (response && response.status === Response.RATE_LIMIT) {
             let newCount = (this._retryCounts.get(queryKey) || 0) + 1;
-
-            if (newCount < this._retryLimit) {
-              console.log(`retrying attempt #${this._retryCounts.get(queryKey) || 0}`);
-              this._retryCounts.set(queryKey, newCount);
-              cb(Query.States.SUBMITTING);
+            if (newCount < this._retryLimitForQuery(query)) {
+              setTimeout(() => {
+                console.log(`retrying attempt #${this._retryCounts.get(queryKey) || 0}`);
+                this._retryCounts.set(queryKey, newCount);
+                cb(Query.States.SUBMITTING);
+              }, this._retryDelay);
             } else {
               cb();
             }
@@ -39,6 +42,19 @@ export default FilterSet.extend('QueryThrottle', {
         }
       }
     ];
+  },
+
+  queryMethods() {
+    var filter = this;
+    return {
+      withRetryLimit: function(limit) {
+        filter._retryLimits.set(this, limit);
+      }
+    };
+  },
+
+  _retryLimitForQuery(query) {
+    return this._retryLimits[query] || this._retryLimit;
   }
 });
 

@@ -9,8 +9,8 @@ import EventManager from './EventManager';
  */
 export default class OpticObject extends EventManager {}
 
-// TODO(lopatin) Can this (and option deconstruction) be implemented with prototypes? Instead
-// of ugly property copying.
+// TODO(lopatin) Can and should this and option deconstruction be implemented with prototypes?
+// Instead of ugly property copying. And is it that ugly?
 OpticObject.prototype._constructOptions = function(defaults, options) {
   Utils.each(defaults, (defaultVal, key) => {
     this['_' + key] = Utils.isUndefined(options[key]) ? defaultVal : options[key];
@@ -101,7 +101,7 @@ var extend = function(className, props, statics) {
   // Unique ID of this class
   NewClass._classId = Utils.uid();
 
-  NewClass.prototype = newPrototype;
+  NewClass.prototype = Object.create(newPrototype);
   NewClass.prototype.constructor = NewClass;
   NewClass.extend = extend;
   return NewClass;
