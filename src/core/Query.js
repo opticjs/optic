@@ -88,7 +88,7 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
     this._onQueryUpdate = onUpdate;
 
     // Response with initial temporary response before all other work starts
-    this._registerResponse(new Response());
+    this._registerResponse(Response.newProvisionalResponse());
 
     this.submittedAt = new Date().getTime();
 

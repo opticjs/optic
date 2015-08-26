@@ -1,5 +1,6 @@
 import FilterSet from '../core/FilterSet';
 import Query from '../core/Query';
+import Response from '../core/Response';
 import * as Utils from '../core/Utils';
 
 const availableOptions = function() {
@@ -44,9 +45,9 @@ export default FilterSet.extend('QueryThrottle', {
     return [
       response => {
         if (!this._allowOutdatedResponses && response.requestedAt < this._latestRequestedAt) {
-          return null;
+          return Response.newProvisionalResponse();
         }
-        
+
         this._latestRequestedAt = response.requestedAt;
         return response;
       }

@@ -15,7 +15,7 @@ const availableOptions = function() {
  * Responses are emitted by query filters and and passed through to the query submission
  * callbacks. A response *should not* have a reference to the query that triggered it.
  */
-export default OpticObject.extend('Response', {
+var Response = OpticObject.extend('Response', {
 
   /**
    * @param {Object} [options={}]
@@ -51,4 +51,13 @@ export default OpticObject.extend('Response', {
   isProvisional() {
     return this.status == null;
   }
-}, {OK: 200, ERROR: 0});
+}, {
+  OK: 200,
+  ERROR: 0,
+
+  newProvisionalResponse() {
+    return new Response();
+  }
+});
+
+export default Response;
