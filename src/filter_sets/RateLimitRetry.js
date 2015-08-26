@@ -26,11 +26,11 @@ export default FilterSet.extend('RateLimitRetry', {
         filter: (query, emitResponse, cb) => {
           var response = query.getFinalResponse();
           if (response && response.status === Response.RATE_LIMIT) {
-            let newCount = (this._retryCounts.get(queryKey) || 0) + 1;
+            let newCount = (this._retryCounts.get(query) || 0) + 1;
             if (newCount < this._retryLimitForQuery(query)) {
               setTimeout(() => {
-                console.log(`retrying attempt #${this._retryCounts.get(queryKey) || 0}`);
-                this._retryCounts.set(queryKey, newCount);
+                console.log(`retrying attempt #${this._retryCounts.get(query) || 0}`);
+                this._retryCounts.set(query, newCount);
                 cb(Query.States.SUBMITTING);
               }, this._retryDelay);
             } else {
