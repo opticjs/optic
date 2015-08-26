@@ -9,6 +9,7 @@ import * as Utils from './core/Utils';
 import QueryCache from './filter_sets/QueryCache';
 import QueryCombiner from './filter_sets/QueryCombiner';
 import QueryThrottle from './filter_sets/QueryThrottle';
+import RateLimitRetry from './filter_sets/RateLimitRetry';
 import ResourceLinker from './filter_sets/ResourceLinker';
 
 export default {
@@ -22,6 +23,7 @@ export default {
     QueryCache: QueryCache,
     QueryCombiner: QueryCombiner,
     QueryThrottle: QueryThrottle,
+    RateLimitRetry: RateLimitRetry,
     ResourceLinker: ResourceLinker
   }
 };

@@ -1,6 +1,6 @@
 {
   "name": "optic",
-  "version": "0.0.38",
+  "version": "0.0.39",
   "main": "lib/index.js",
   "scripts": {
     "prepublish": "scripts/prepublish",

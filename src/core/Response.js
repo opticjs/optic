@@ -53,7 +53,9 @@ var Response = OpticObject.extend('Response', {
   }
 }, {
   OK: 200,
+  
   ERROR: 0,
+  RATE_LIMIT: 429,
 
   newProvisionalResponse() {
     return new Response();
