@@ -49,7 +49,7 @@ var Response = OpticObject.extend('Response', {
    * null status.
    */
   isProvisional() {
-    return this.status == null;
+    return this.status === null;
   }
 }, {
   OK: 200,

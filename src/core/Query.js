@@ -38,7 +38,7 @@ const availableOptions = function() {
     adapter: null,
     filterSets: [],
     sortQueryFiltersFn: (filters, fromState, toState) => filters,
-    sortResponseFiltersFn: filters => filters
+    sortResponseFiltersFn: filters => Utils.map(filters, x => x).reverse()
   }
 };
 
@@ -203,16 +203,20 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
   _registerResponse(response) {
     response.requestedAt = this.submittedAt;
 
-    Utils.each(this._getSortedResponseFilters(), filter => {
-      if (response) {
-        response = filter(response);
+    var processResponseFilters = (filters, callback) => {
+      if (filters.length > 0) {
+        processResponseFilters(filters.slice(1), response => {
+          filters[0](response, callback);
+        });
+      } else {
+        callback(response);
       }
-    });
+    };
 
-    if (response) {
+    processResponseFilters(this._getSortedResponseFilters(), response => {
       this._responses.push(response);
       this._onQueryUpdate && this._onQueryUpdate(response);
-    }
+    });
   }
 }), {States: States});
 

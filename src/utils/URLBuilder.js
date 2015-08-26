@@ -32,6 +32,7 @@ export default {
    */
   build(options) {
     var protocol = options.protocol ? options.protocol + '://' : '';
+    var host = options.host || '';
     var searchQueryParams = Utils.map(
       Object.keys(options.search),
       key => `${key}=${encodeURIComponent(options.search[key])}`

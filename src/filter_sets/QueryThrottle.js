@@ -43,13 +43,12 @@ export default FilterSet.extend('QueryThrottle', {
 
   responseFilters() {
     return [
-      response => {
-        if (!this._allowOutdatedResponses && response.requestedAt < this._latestRequestedAt) {
-          return Response.newProvisionalResponse();
+      (response, callback) => {
+        if (this._allowOutdatedResponses || !response.requestedAt ||
+            response.requestedAt > this._latestRequestedAt) {
+          this._latestRequestedAt = response.requestedAt;
+          callback(response);
         }
-
-        this._latestRequestedAt = response.requestedAt;
-        return response;
       }
     ];
   },

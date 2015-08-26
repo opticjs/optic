@@ -14,9 +14,10 @@ export default FilterSet.extend('ResourceLinker', {
 
   responseFilters() {
     return [
-      response => {
+      (response, callback) => {
         if (!response.data) {
-          return response;
+          callback(response);
+          return;
         }
 
         // A function that takes in a resource and returns the linked resource if the ref
@@ -55,7 +56,7 @@ export default FilterSet.extend('ResourceLinker', {
           response.data = Utils.map(response.data, fetchResourceRef);
         }
 
-        return response;
+        callback(response);
       }
     ];
   }
