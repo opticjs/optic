@@ -62,11 +62,11 @@ export default FilterSet.extend('RateLimitRetry', {
   },
 
   _retryLimitForQuery(query) {
-    return this._retryLimits[query] || this._retryLimit;
+    return this._retryLimits.get(query) || this._retryLimit;
   },
 
   _retryDelayForQuery(query) {
-    return this._retryDelays[query] || this._retryDelay;
+    return this._retryDelays.get(query) || this._retryDelay;
   }
 });
 
