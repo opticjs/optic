@@ -14,7 +14,7 @@ export default FilterSet.extend('RateLimitRetry', {
   init(options) {
     this._retryCounts = new WeakMap();
     this._retryLimits = new WeakMap();
-    this._constructOptions(availableOptions, options);
+    this._constructOptions(availableOptions(), options);
   },
 
   queryFilters() {
