@@ -6,7 +6,8 @@ import * as Utils from '../core/Utils';
 const availableOptions = function() {
   return {
     retryLimit: 3,
-    retryDelay: 1000
+    retryDelay: 1000,
+    maxTurbulence: 0
   };
 };
 
@@ -32,8 +33,10 @@ export default FilterSet.extend('RateLimitRetry', {
             if (newCount < filter._retryLimitForQuery(query)) {
               setTimeout(() => {
                 console.log(`retrying attempt #${filter._retryCounts.get(query) || 0}`);
-                filter._retryCounts.set(query, newCount);
-                cb(Query.States.SUBMITTING);
+                setTimeout(() => {
+                  filter._retryCounts.set(query, newCount);
+                  cb(Query.States.SUBMITTING);
+                }, this._maxTurbulence * Math.random());
               }, filter._retryDelayForQuery(query));
             } else {
               cb();
@@ -56,6 +59,11 @@ export default FilterSet.extend('RateLimitRetry', {
 
       withRetryDelay: function(delay) {
         filter._retryDelays.set(this, delay);
+        return this;
+      },
+
+      withMaxTurbulence: function(turblence) {
+        this._maxTurbulence = turblence;
         return this;
       }
     };
