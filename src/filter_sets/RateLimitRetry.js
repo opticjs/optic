@@ -18,6 +18,7 @@ export default FilterSet.extend('RateLimitRetry', {
   },
 
   queryFilters() {
+    var filter = this;
     return [
       {
         from: Query.States.SUBMITTING,
@@ -26,13 +27,13 @@ export default FilterSet.extend('RateLimitRetry', {
         filter: (query, emitResponse, cb) => {
           var response = query.getFinalResponse();
           if (response && response.status === Response.RATE_LIMIT) {
-            let newCount = (this._retryCounts.get(query) || 0) + 1;
-            if (newCount < this._retryLimitForQuery(query)) {
+            let newCount = (filter._retryCounts.get(query) || 0) + 1;
+            if (newCount < filter._retryLimitForQuery(query)) {
               setTimeout(() => {
-                console.log(`retrying attempt #${this._retryCounts.get(query) || 0}`);
-                this._retryCounts.set(query, newCount);
+                console.log(`retrying attempt #${filter._retryCounts.get(query) || 0}`);
+                filter._retryCounts.set(query, newCount);
                 cb(Query.States.SUBMITTING);
-              }, this._retryDelay);
+              }, filter._retryDelay);
             } else {
               cb();
             }
