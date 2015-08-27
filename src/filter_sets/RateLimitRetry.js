@@ -55,7 +55,7 @@ export default FilterSet.extend('RateLimitRetry', {
       },
 
       withRetryDelay: function(delay) {
-        filter._retryDelays.set(this, limit);
+        filter._retryDelays.set(this, delay);
         return this;
       }
     };
