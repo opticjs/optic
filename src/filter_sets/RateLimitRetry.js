@@ -35,20 +35,20 @@ export default FilterSet.extend('RateLimitRetry', {
               filter._retryCounts.set(query, count + 1);
               setTimeout(() => {
                 setTimeout(() => {
-                  if (!this._queryRetryBlacklist.has(query)) {
+                  if (!filter._queryRetryBlacklist.has(query)) {
                     console.log(`retrying attempt #${filter._retryCounts.get(query) || 0}`);
                     cb(Query.States.SUBMITTING);
                   } else {
                     cb();
                   }
-                }, this._maxTurbulence * Math.random());
+                }, filter._maxTurbulence * Math.random());
               }, filter._retryDelayForQuery(query));
             } else {
-              this._queryRetryBlacklist.add(query);
+              filter._queryRetryBlacklist.add(query);
               cb();
             }
           } else {
-            this._queryRetryBlacklist.add(query);
+            filter._queryRetryBlacklist.add(query);
             cb();
           }
         }
