@@ -92,10 +92,7 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
 
     this.submittedAt = new Date().getTime();
 
-    // Kick off the submission by starting a transition to the SUBMITTING state. When this
-    // operation completes, the state that the query lands on is NOT guaranteed to be the
-    // destination state that we specify in this function call.
-    startStateTransitionTo(this, States.SUBMITTING, () => {
+    this._finalQueryCallback = () => {
       // The filter chain has completed and the query is considered done. The filters should
       // have emitted at least one non-provisional response. The latest one of these will be
       // used as the final response and sent to the main query completion callback.
@@ -110,7 +107,12 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
       if (finalResponse) {
         this._onQueryComplete(finalResponse);
       }
-    });
+    };
+
+    // Kick off the submission by starting a transition to the SUBMITTING state. When this
+    // operation completes, the state that the query lands on is NOT guaranteed to be the
+    // destination state that we specify in this function call.
+    startStateTransitionTo(this, States.SUBMITTING, this._finalQueryCallback);
   },
 
   getParams() {
@@ -226,8 +228,14 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
     };
 
     processResponseFilters(this._getSortedResponseFilters(), response => {
-      this._responses.push(response);
-      this._onQueryUpdate && this._onQueryUpdate(response);
+      // If there's no response then we cancel the query. Otherwise, save the response and
+      // invoke the update callback if it's available.
+      if (!response) {
+        startStateTransitionTo(this, States.CANCELED, this._finalQueryCallbactar);
+      } else {
+        this._responses.push(response);
+        this._onQueryUpdate && this._onQueryUpdate(response);
+      }
     });
   }
 }), {States: States});

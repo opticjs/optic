@@ -33,7 +33,7 @@ export default FilterSet.extend('QueryThrottle', {
           // Clean up after any swallowed requests
           setTimeout(() => {
             if (!this._callbackTriggered) {
-              cb(Query.States.CANCELLED);
+              cb(Query.States.CANCELED);
             }
           }, this._wait + 100);
         }
@@ -48,6 +48,8 @@ export default FilterSet.extend('QueryThrottle', {
             response.requestedAt >= this._latestRequestedAt) {
           this._latestRequestedAt = response.requestedAt;
           callback(response);
+        } else {
+          callback();
         }
       }
     ];
