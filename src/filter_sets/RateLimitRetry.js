@@ -51,10 +51,12 @@ export default FilterSet.extend('RateLimitRetry', {
     return {
       withRetryLimit: function(limit) {
         filter._retryLimits.set(this, limit);
+        return this;
       },
 
       withRetryDelay: function(delay) {
         filter._retryDelays.set(this, limit);
+        return this;
       }
     };
   },
