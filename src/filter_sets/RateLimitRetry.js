@@ -16,6 +16,7 @@ export default FilterSet.extend('RateLimitRetry', {
     this._retryCounts = new WeakMap();
     this._retryLimits = new WeakMap();
     this._retryDelays = new WeakMap();
+    this._queryRetryBlacklist = new WeakSet();
     this._constructOptions(availableOptions(), options);
   },
 
@@ -34,7 +35,7 @@ export default FilterSet.extend('RateLimitRetry', {
               filter._retryCounts.set(query, count + 1);
               setTimeout(() => {
                 setTimeout(() => {
-                  if (count + 1 === filter._retryCounts.get(query)) {
+                  if (!this._queryRetryBlacklist.has(query)) {
                     console.log(`retrying attempt #${filter._retryCounts.get(query) || 0}`);
                     cb(Query.States.SUBMITTING);
                   } else {
@@ -43,9 +44,11 @@ export default FilterSet.extend('RateLimitRetry', {
                 }, this._maxTurbulence * Math.random());
               }, filter._retryDelayForQuery(query));
             } else {
+              this._queryRetryBlacklist.add(query);
               cb();
             }
           } else {
+            this._queryRetryBlacklist.add(query);
             cb();
           }
         }
