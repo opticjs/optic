@@ -11,7 +11,7 @@ export default class OpticObject extends EventManager {}
 
 // TODO(lopatin) Can and should this and option deconstruction be implemented with prototypes?
 // Instead of ugly property copying. And is it that ugly?
-OpticObject.prototype._constructOptions = function(defaults, options) {
+OpticObject.prototype._constructOptions = function(defaults, options = {}) {
   Utils.each(defaults, (defaultVal, key) => {
     this['_' + key] = Utils.isUndefined(options[key]) ? defaultVal : options[key];
   });
