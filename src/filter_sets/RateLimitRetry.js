@@ -63,7 +63,7 @@ export default FilterSet.extend('RateLimitRetry', {
       },
 
       withMaxTurbulence: function(turblence) {
-        this._maxTurbulence = turblence;
+        filter._maxTurbulence = turblence;
         return this;
       }
     };
