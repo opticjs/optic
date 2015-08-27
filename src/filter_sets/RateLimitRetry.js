@@ -31,10 +31,10 @@ export default FilterSet.extend('RateLimitRetry', {
           if (response && response.status === Response.RATE_LIMIT) {
             let newCount = (filter._retryCounts.get(query) || 0) + 1;
             if (newCount < filter._retryLimitForQuery(query)) {
+              filter._retryCounts.set(query, newCount);
               setTimeout(() => {
                 console.log(`retrying attempt #${filter._retryCounts.get(query) || 0}`);
                 setTimeout(() => {
-                  filter._retryCounts.set(query, newCount);
                   cb(Query.States.SUBMITTING);
                 }, this._maxTurbulence * Math.random());
               }, filter._retryDelayForQuery(query));
