@@ -29,13 +29,17 @@ export default FilterSet.extend('RateLimitRetry', {
         filter: (query, emitResponse, cb) => {
           var response = query.getFinalResponse();
           if (response && response.status === Response.RATE_LIMIT) {
-            let newCount = (filter._retryCounts.get(query) || 0) + 1;
-            if (newCount < filter._retryLimitForQuery(query)) {
-              filter._retryCounts.set(query, newCount);
+            let count = filter._retryCounts.get(query) || 0;
+            if (count + 1 < filter._retryLimitForQuery(query)) {
+              filter._retryCounts.set(query, count + 1);
               setTimeout(() => {
-                console.log(`retrying attempt #${filter._retryCounts.get(query) || 0}`);
                 setTimeout(() => {
-                  cb(Query.States.SUBMITTING);
+                  if (count + 1 === filter._retryCounts.get(query)) {
+                    console.log(`retrying attempt #${filter._retryCounts.get(query) || 0}`);
+                    cb(Query.States.SUBMITTING);
+                  } else {
+                    cb();
+                  }
                 }, this._maxTurbulence * Math.random());
               }, filter._retryDelayForQuery(query));
             } else {
