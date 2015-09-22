@@ -10,7 +10,7 @@ import EventManager from './EventManager';
 export default class OpticObject extends EventManager {}
 
 // TODO(lopatin) Can and should this and option deconstruction be implemented with prototypes?
-// Instead of ugly property copying. And is it that ugly?
+// Instead of ugly property transferring. And is it that ugly?
 OpticObject.prototype._constructOptions = function(defaults, options = {}) {
   Utils.each(defaults, (defaultVal, key) => {
     this['_' + key] = Utils.isUndefined(options[key]) ? defaultVal : options[key];
@@ -85,7 +85,10 @@ var extend = function(className, props, statics) {
         props[field];
   }
 
-  // The new class constructor that calls through to the `init` method.
+  // The new class constructor that calls through to the `init` method. The eval is used to set
+  // the proper class name for instances of the new class. This makes stack traces a lot more
+  // useful. Dear person of the future, feel free to remove the eval if you find a better way to
+  // achieve that goal.
   var NewClass = eval(`(
     function ${className}() {
       this._instanceId = Utils.uid();

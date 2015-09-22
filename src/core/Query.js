@@ -82,12 +82,12 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
 
   submit(onComplete, onUpdate = null) {
     Utils.assert(this._state === States.IDLE,
-        'A query can only be submitted from the IDLE state.');
+        'A query can only be submitted from the idle state.');
 
     this._onQueryComplete = onComplete;
     this._onQueryUpdate = onUpdate;
 
-    // Response with initial temporary response before all other work starts
+    // Send and initial provisional response before all other work starts.
     this._registerResponse(Response.newProvisionalResponse());
 
     this.submittedAt = new Date().getTime();
@@ -103,8 +103,8 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
         }
       });
 
-      // We're done!
       if (finalResponse) {
+        // We're done!
         this._onQueryComplete(finalResponse);
       }
     };
@@ -287,10 +287,8 @@ function startStateTransitionTo(query, state, callback = Utils.noOp) {
  * callback when all filters are processed.
  */
 function processFilters(query, filters, ifNewVal, callback = Utils.noOp) {
-  var initialResponsesLength = query._responses.length;
-
   if (filters.length === 0) {
-    // If no more filters to process, then we are done and invoke the callback.
+    // We're done if there are no more filters to process.
     callback();
   } else {
     // Otherwise we invoke the first filter.

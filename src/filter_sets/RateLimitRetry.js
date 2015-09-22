@@ -7,7 +7,7 @@ const availableOptions = function() {
   return {
     retryLimit: 3,
     retryDelay: 1000,
-    maxTurbulence: 0
+    maxTurbulence: 1000
   };
 };
 
