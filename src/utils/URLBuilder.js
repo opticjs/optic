@@ -54,7 +54,6 @@ export default {
       // Hash fragment
       options.hash ? '#' + options.hash : ''
     ].join('');
-    console.log(a);
     return a;
   }
 };

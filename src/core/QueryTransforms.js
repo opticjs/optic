@@ -6,45 +6,55 @@ import * as Utils from './Utils';
 var Actions = Adapter.Actions;
 
 export function parent(query, parent) {
-  query._action = Actions.FETCH;
-  query._parent = parent;
+  query.setProps({
+    action: Actions.FETCH,
+    parent: parent
+  });
   return query;
 }
 
 export function params(query, params) {
-  query._params = params;
+  query.setProps({
+    params: params
+  });
   return query;
 }
 
 export function fetch(query) {
-  query._action = Actions.FETCH;
+  query.setProps({
+    action: Actions.FETCH
+  });
   return query;
 }
 
 export function update(query, data) {
-  query._data = data;
-  query._action = Actions.UPDATE;
+  query.setProps({
+    data: data,
+    action: Actions.UPDATE
+  });
   return query;
 }
 
 export function create(query, data) {
-  query._data = data;
-  query._action = Actions.CREATE;
+  query.setProps({
+    data: data,
+    action: Actions.CREATE
+  });
   return query;
 }
 
 export function remove(query) {
-  query._action = Actions.REMOVE;
+  query.setProps({action: Actions.REMOVE});
   return query;
 }
 
 export function adapter(query, adapter) {
-  query._adapter = adapter;
+  query.setProps({adapter: adapter});
   return query;
 }
 
 export function filterSets(query, filterSets) {
-  query._filterSets = filterSets;
+  query.setProps({filterSets: filterSets});
 }
 
 export function addFilterSet(query, filterSet) {
@@ -72,11 +82,16 @@ export function removeFilterSets(query, filterSets = []) {
 }
 
 export function sortQueryFilters(query, sortFn) {
-  query._sortQueryFiltersFn = sortFn;
+  query.setProps({
+    sortQueryFiltersFn: new OpticObject.Source(() => sortFn)
+  });
   return query;
 }
 
 export function sortResponseFilters(query, sortFn) {
   query._sortResponseFiltersFn = sortFn;
+  query.setProps({
+    sortResponseFiltersFn: new OpticObject.Source(() => sortFn)
+  });
   return query;
 }

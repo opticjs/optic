@@ -1,16 +1,18 @@
 import FilterSet from '../core/FilterSet';
+import HashMap from '../structs/HashMap';
 import Query from '../core/Query';
 import * as Utils from '../core/Utils';
+import {deepEquals} from '../core/deepEquals';
 
 /**
- * QueryLinker makes sure that any concurrent and identical queries are merged into one query
- * under the hood. After the request finishes, the query callbacks for all of the original
- * queries before the merge are fired independently.
+ * QueryCombiner makes sure that any concurrent and identical queries are merged into one query
+ * under the hood. After the request finishes, the query callbacks for all of the original queries
+ * before the merge are fired independently.
  */
 
 export default FilterSet.extend('QueryCombiner', {
   init() {
-    this._queryBuckets = {};
+    this._queryBuckets = new HashMap(deepEquals);
   },
 
   queryFilters() {
@@ -19,8 +21,7 @@ export default FilterSet.extend('QueryCombiner', {
         from: Query.States.IDLE,
         to: Query.States.SUBMITTING,
         filter: (query, emitResponse, cb) => {
-          var key = query.toString(false);
-          var bucket = this._queryBuckets[key];
+          var bucket = this._queryBuckets.get(query);
 
           if (bucket) {
             bucket.callbacks.push({
@@ -29,10 +30,10 @@ export default FilterSet.extend('QueryCombiner', {
               cb: cb
             });
           } else {
-            this._queryBuckets[key] = {
+            this._queryBuckets.set(query, {
               originalQuery: query,
               callbacks: []
-            };
+            });
             cb();
           }
         }
@@ -41,8 +42,7 @@ export default FilterSet.extend('QueryCombiner', {
       {
         to: Query.States.DONE,
         filter: (query, emitResponse, cb) => {
-          var key = query.toString(false);
-          var bucket = this._queryBuckets[key];
+          var bucket = this._queryBuckets.get(query);
 
           if (bucket && bucket.originalQuery === query) {
             Utils.each(bucket.callbacks, cbs => {
@@ -52,7 +52,7 @@ export default FilterSet.extend('QueryCombiner', {
                 cbs.cb(Query.States.DONE);
               }
             });
-            this._queryBuckets[key] = null;
+            this._queryBuckets.remove(query);
           }
 
           cb();

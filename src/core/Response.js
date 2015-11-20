@@ -3,14 +3,6 @@
 import * as Utils from './Utils';
 import OpticObject from './OpticObject';
 
-const availableOptions = function() {
-  return {
-    data: null,
-    status: null,
-    params: {}
-  };
-};
-
 /**
  * Responses are emitted by query filters and and passed through to the query submission
  * callbacks. A response *should not* have a reference to the query that triggered it.
@@ -25,13 +17,11 @@ var Response = OpticObject.extend('Response', {
    *     Either a single resource or an array of resources, depending on the query type.
    */
   init(options = {}) {
-    this._constructOptions(availableOptions(), options);
-    this._super();
+    this.setProps(options);
 
-    // Public fields
-    this.status = this._status;
-    this.data = this._data;
-    this.params = this._params;
+    this.status = this.props().status;
+    this.data = this.props().data;
+    this.params = this.props().params;
   },
 
   /**
@@ -61,5 +51,11 @@ var Response = OpticObject.extend('Response', {
     return new Response();
   }
 });
+
+Response.defaultProps = {
+  data: null,
+  status: null,
+  params: {}
+};
 
 export default Response;

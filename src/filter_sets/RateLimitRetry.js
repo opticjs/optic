@@ -3,21 +3,13 @@ import Query from '../core/Query';
 import Response from '../core/Response';
 import * as Utils from '../core/Utils';
 
-const availableOptions = function() {
-  return {
-    retryLimit: 3,
-    retryDelay: 1000,
-    maxTurbulence: 1000
-  };
-};
-
-export default FilterSet.extend('RateLimitRetry', {
+var RateLimitRetry = FilterSet.extend('RateLimitRetry', {
   init(options) {
     this._retryCounts = new WeakMap();
     this._retryLimits = new WeakMap();
     this._retryDelays = new WeakMap();
     this._queryRetryBlacklist = new WeakSet();
-    this._constructOptions(availableOptions(), options);
+    this.setProps(options);
   },
 
   queryFilters() {
@@ -41,7 +33,7 @@ export default FilterSet.extend('RateLimitRetry', {
                   } else {
                     cb();
                   }
-                }, filter._maxTurbulence * Math.random());
+                }, filter.props().maxTurbulence * Math.random());
               }, filter._retryDelayForQuery(query));
             } else {
               filter._queryRetryBlacklist.add(query);
@@ -70,18 +62,25 @@ export default FilterSet.extend('RateLimitRetry', {
       },
 
       withMaxTurbulence: function(turblence) {
-        filter._maxTurbulence = turblence;
+        filter.props().maxTurbulence = turblence;
         return this;
       }
     };
   },
 
   _retryLimitForQuery(query) {
-    return this._retryLimits.get(query) || this._retryLimit;
+    return this._retryLimits.get(query) || this.props().retryLimit;
   },
 
   _retryDelayForQuery(query) {
-    return this._retryDelays.get(query) || this._retryDelay;
+    return this._retryDelays.get(query) || this.props().retryDelay;
   }
 });
 
+RateLimitRetry.defaultProps = {
+  retryLimit: 3,
+  retryDelay: 1000,
+  maxTurbulence: 1000
+};
+
+export default RateLimitRetry;

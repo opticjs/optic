@@ -4,7 +4,6 @@ import FilterSet from './FilterSet';
 import * as Logger from './Logger';
 import * as QueryTransforms from './QueryTransforms';
 import * as Utils from './Utils';
-import * as Hash from '../utils/Hash';
 
 const States = {
   IDLE: 'idle',
@@ -28,26 +27,13 @@ const SubmissionFilterSet = FilterSet.extend('SubmissionFilterSet', {
 });
 const submissionFilterSet = new SubmissionFilterSet();
 
-const availableOptions = function() {
-  return {
-    action: null,
-    params: {},
-    data: {},
-    parent: null,
-    state: States.IDLE,
-    adapter: null,
-    filterSets: [],
-    sortQueryFiltersFn: (filters, fromState, toState) => filters,
-    sortResponseFiltersFn: filters => Utils.map(filters, x => x).reverse()
-  }
-};
-
 const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
   init(ResourceClass, options = {}) {
     this._ResourceClass = ResourceClass;
     this._responses = [];
-    this._constructOptions(availableOptions(), options);
-    this._super();
+    this.setProps(options);
+    this._super(ResourceClass);
+    this._state = States.IDLE;
 
     // Setup default query config options.
     var config = ResourceClass.getConfig();
@@ -59,8 +45,8 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
 
     // Set the adapter if it's specified in the resource config but it doesn't exist
     // on the object yet.
-    if (config.adapter && !this._adapter) {
-      this._adapter = config.adapter;
+    if (config.adapter && !this.props().adapter) {
+      this.setProps({adapter: config.adapter});
     }
 
     // Set of filter functions that are considered disabled by this query.
@@ -71,13 +57,6 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
 
     // Timestamp
     this.submittedAt = null;
-  },
-
-  clone() {
-    return new Query(
-      this._ResourceClass,
-      this._deconstructOptions(availableOptions())
-    );
   },
 
   submit(onComplete, onUpdate = null) {
@@ -116,19 +95,19 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
   },
 
   getParams() {
-    return this._params;
+    return this.props().params;
   },
 
   replaceParams(params) {
-    this._params = params;
+    this.setProps({params: params});
   },
 
   getData() {
-    return this._data;
+    return this.props().data;
   },
 
   getAction() {
-    return this._action;
+    return this.props().action;
   },
 
   getResourceClass() {
@@ -145,7 +124,7 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
   },
 
   getFilterSets() {
-    return Utils.union(this._filterSets, this._ResourceClass.getConfig().filterSets || []);
+    return Utils.union(this.props().filterSets, this._ResourceClass.getConfig().filterSets || []);
   },
 
   getResponses() {
@@ -153,7 +132,7 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
   },
 
   _getSortedResponseFilters() {
-    return this._sortResponseFiltersFn(Utils.flatten(Utils.map(
+    return this.props().sortResponseFiltersFn(Utils.flatten(Utils.map(
         this.getFilterSets(),
         filterSet => filterSet.getResponseFilters()
     )));
@@ -161,7 +140,7 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
 
   _getSortedQueryFiltersForTransition(fromState, toState) {
     var getFilters = mapFn => Utils.select(
-        this._sortQueryFiltersFn(
+        this.props().sortQueryFiltersFn(
             Utils.flatten(Utils.map(this._getEffectiveFilterSets(), mapFn)),
             fromState,
             toState
@@ -183,19 +162,19 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
   },
 
   _getAdapterInstance() {
-    var AdapterClass = this._adapter || null;
+    var AdapterClass = this.props().adapter || null;
     return AdapterClass ? new AdapterClass() : null;
   },
 
   _getEffectiveFilterSets() {
-    return Utils.flatten([this._filterSets, [submissionFilterSet]]);
+    return Utils.flatten([this.props().filterSets, [submissionFilterSet]]);
   },
 
   /**
    * This should be the only way that a filter set is added to the query.
    */
   _addFilterSet(filterSet) {
-    this._filterSets = Utils.union(this._filterSets, [filterSet]);
+    this.setProps({filterSets: Utils.union(this.props().filterSets, [filterSet])});
     Utils.each(Utils.keys(filterSet.queryMethods()), key => {
       this[key] = filterSet.queryMethods()[key].bind(this);
     });
@@ -205,7 +184,7 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
    * This should be the only way that a filter set is removed from the query.
    */
   _removeFilterSet(filterSet) {
-    this._filterSets = Utils.without(this._filterSets, filterSet);
+    this.setProps({filterSets: Utils.without(this.props().filterSets, filterSet)});
     Utils.each(Utils.keys(filterSet.queryMethods()), key => {
       delete this[key];
     });
@@ -238,7 +217,22 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
       }
     });
   }
-}), {States: States});
+}), {
+  States: States
+});
+
+Query.defaultProps = {
+  action: null,
+  params: {},
+  data: {},
+  parent: null,
+  adapter: null,
+  filterSets: [],
+  sortQueryFiltersFn: new OpticObject.Source('sortQueryFilters',
+    () => (filters, fromState, toState) => filters),
+  sortResponseFiltersFn: new OpticObject.Source('sortResponseFilters',
+    () => filters => Utils.map(filters, x => x).reverse())
+};
 
 /**
  * Returns all the functions defined in QueryTransforms with the context bound to the

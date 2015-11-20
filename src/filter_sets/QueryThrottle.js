@@ -3,20 +3,13 @@ import Query from '../core/Query';
 import Response from '../core/Response';
 import * as Utils from '../core/Utils';
 
-const availableOptions = function() {
-  return {
-    allowOutdatedResponses: false
-  };
-};
-
-export default FilterSet.extend('QueryThrottle', {
-  init(wait = 100, options) {
-    this._constructOptions(availableOptions, options);
-    this._wait = wait;
+var QueryThrottle = FilterSet.extend('QueryThrottle', {
+  init(options = {}) {
+    this.setProps(options);
     this._latestRequestedAt = 0;
     this._throttled = throttle((fn) => {
       fn();
-    }, this._wait);
+    }, this.props().wait);
   },
 
   queryFilters() {
@@ -35,7 +28,7 @@ export default FilterSet.extend('QueryThrottle', {
             if (!this._callbackTriggered) {
               cb(Query.States.CANCELED);
             }
-          }, this._wait + 100);
+          }, this.props().wait + 100);
         }
       }
     ];
@@ -44,7 +37,7 @@ export default FilterSet.extend('QueryThrottle', {
   responseFilters() {
     return [
       (response, callback) => {
-        if (this._allowOutdatedResponses || !response.requestedAt ||
+        if (this.props().allowOutdatedResponses || !response.requestedAt ||
             response.requestedAt >= this._latestRequestedAt) {
           this._latestRequestedAt = response.requestedAt;
           callback(response);
@@ -55,6 +48,13 @@ export default FilterSet.extend('QueryThrottle', {
     ];
   }
 });
+
+QueryThrottle.defaultProps = {
+  allowOutdatedResponses: false,
+  wait: 100
+};
+
+export default QueryThrottle;
 
 /**
  * Thanks Jeremy Ashkenas! Taken from from http://underscorejs.org/docs/underscore.html

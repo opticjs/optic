@@ -36,9 +36,5 @@ export default OpticObject.extend('FilterSet', {
 
   getResponseFilters() {
     return this.responseFilters && this.responseFilters() || [];
-  },
-
-  toString() {
-    return `<FilterSet::${this._instanceId}>`;
   }
 }, {Directions: Directions, defaults: filterDefaults});

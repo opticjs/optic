@@ -1,4 +1,6 @@
+import deepEqual from '../core/deepEquals';
 import FilterSet from '../core/FilterSet';
+import HashMap from '../structs/HashMap';
 import Query from '../core/Query';
 
 /**
@@ -7,7 +9,7 @@ import Query from '../core/Query';
  */
 export default FilterSet.extend('QueryCache', {
   init() {
-    this._responses = {};
+    this._responses = new HashMap(deepEqual);
   },
 
   queryFilters() {
@@ -16,8 +18,10 @@ export default FilterSet.extend('QueryCache', {
         from: Query.States.IDLE,
         to: Query.States.SUBMITTING,
         filter: (query, emitResponse, cb) => {
-          var key = query.toString(false);
-          var response = this._responses[key];
+	  this._responses.has(query);
+          var response = this._responses.get(query);
+	  console.log('response');
+	  console.log(response);
 
           if (response) {
             emitResponse(response);
@@ -31,11 +35,14 @@ export default FilterSet.extend('QueryCache', {
       {
         to: Query.States.DONE,
         filter: (query, emitResponse, cb) => {
-          var key = query.toString(false);
           var response = query.getFinalResponse();
 
-          if (!this._responses[key] && response) {
-            this._responses[key] = response;
+	  // console.log('sup');
+	  // console.log(!this._responses.has(query) && response);
+
+          if (!this._responses.has(query) && response) {
+	    console.log('setting now');
+            this._responses.set(query, response);
           }
 
           cb();

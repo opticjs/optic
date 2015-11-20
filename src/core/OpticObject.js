@@ -2,66 +2,11 @@
 
 import * as Utils from './Utils';
 import * as Hash from '../utils/Hash';
-import EventManager from './EventManager';
 
 /**
  * All classes in Optic extend from this base class.
  */
-export default class OpticObject extends EventManager {}
-
-// TODO(lopatin) Can and should this and option deconstruction be implemented with prototypes?
-// Instead of ugly property transferring. And is it that ugly?
-OpticObject.prototype._constructOptions = function(defaults, options = {}) {
-  Utils.each(defaults, (defaultVal, key) => {
-    this['_' + key] = Utils.isUndefined(options[key]) ? defaultVal : options[key];
-  });
-};
-
-OpticObject.prototype._deconstructOptions = function(defaults) {
-  return Utils.reduce(
-    Utils.keys(defaults),
-    (memo, key) => Utils.extend(
-        memo,
-        this['_' + key] === defaults[key] ? {} : {[key]: this['_' + key]}
-    ),
-    {}
-  );
-};
-
-OpticObject.prototype.toString = function(keys) {
-  var objectSet = [];
-  var convert = (o, keys) => {
-    if (Utils.isFunction(o) || (o !== this && o instanceof OpticObject)) {
-      return o.toString();
-    } else if (Utils.isArray(o)) {
-      return Utils.map(o, convert);
-    } else if (Utils.isObject(o)) {
-      return Utils.reduce(Utils.sort(keys || Utils.keys(o)), (memo, key) => {
-        var setIndex = objectSet.indexOf(o[key]);
-        var ret = Utils.extend(memo, {
-          [key]: setIndex === -1 ? convert(o[key]) : `$ref-${setIndex}`
-        });
-
-        if (setIndex === -1) {
-          objectSet.push(o[key]);
-        }
-
-        return ret;
-      }, {});
-    } else if (Utils.isUndefined(o)) {
-      return 'undefined';
-    } else {
-      return o;
-    }
-  };
-
-  return `<${this.constructor.name || 'Object'}:\
-${Hash.combinedHashFn(JSON.stringify(convert(this, keys)))}>`;
-};
-
-OpticObject.prototype.copy = function() {
-
-};
+export default class OpticObject {}
 
 OpticObject.prototype.init = () => {};
 
@@ -92,6 +37,7 @@ var extend = function(className, props, statics) {
   var NewClass = eval(`(
     function ${className}() {
       this._instanceId = Utils.uid();
+      this._props = {};
       this.init && this.init.apply(this, arguments);
     }
   )`);
@@ -106,8 +52,93 @@ var extend = function(className, props, statics) {
 
   NewClass.prototype = Object.create(newPrototype);
   NewClass.prototype.constructor = NewClass;
+
+  NewClass.prototype.setProps = function(props) {
+    this._props = Utils.extend(this._props, props);
+  };
+
+  NewClass.prototype.toString = function() {
+    return `<${className}>:${this._instanceId}`;
+  };
+
+  NewClass.prototype.stringify = function() {
+    var rmCircularRefsAndStringify = (o, config = {}) => {
+      config.map = config.map || new WeakMap();
+      config.count = Utils.isUndefined(config.count) ? 0 : config.count;
+      if (Utils.isArray(o)) {
+	return Utils.map(o, item => rmCircularRefsAndStringify(item));
+      } else if (Utils.isObject(o)) {
+	if (config.map.has(o)) {
+	  return `{ref: $${config.map.get(o)}}`;
+	} else {
+	  config.map.set(o, ++config.count);
+	}
+
+	if (o instanceof OpticObject) {
+	  return rmCircularRefsAndStringify(o.props());
+	}
+
+	if (Utils.isPlainObject(o)) {
+	  return Utils.reduce(Utils.keys(o), (memo, key) =>
+	    Utils.extend(memo, {
+	      [key]: rmCircularRefsAndStringify(o[key])
+	    }), {});
+	} else {
+	  return Object.prototype.toString.call(o);
+	}
+      } else {
+	return o;
+      }
+    };
+    return JSON.stringify(rmCircularRefsAndStringify(this.props()));
+  };
+
+  NewClass.prototype.props = function() {
+    function tap(o) {
+      if (Utils.isArray(o)) {
+	return Utils.map(o, item => tap(item));
+      } else if (Utils.isObject(o)) {
+	if (o instanceof OpticObject.Source) {
+	  return tap(o.get());
+	}
+
+	if (Utils.isPlainObject(o)) {
+	  return Utils.reduce(Utils.keys(o), (memo, key) => Utils.extend(memo, {[key]: tap(o[key])}), {});
+	} else {
+	  return o;
+	}
+      } else {
+	return o;
+      }
+    }
+
+    return Utils.extend(tap(this.constructor.defaultProps), tap(this._props));
+  };
+
+  NewClass.prototype.untappedProps = function() {
+    return Utils.extend(this.constructor.defaultProps, this._props);
+  };
+
   NewClass.extend = extend;
+  NewClass.defaultProps = {};
   return NewClass;
 };
 
 OpticObject.extend = extend;
+
+class Source {
+  constructor(name, getter) {
+    if (Utils.isFunction(name)) {
+      getter = name;
+      name = null;
+    }
+    this.name = name;
+    this._getter = getter;
+  }
+
+  get() {
+    return this._getter();
+  }
+}
+
+OpticObject.Source = Source;

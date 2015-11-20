@@ -22,6 +22,17 @@ export function select(list, predicate) {
 }
 
 /**
+ * Same as `select` but expects no more than one match.
+ */
+export function find(list, predicate) {
+  var matches = select(list, predicate);
+  if (matches.length > 1) {
+    throw new Error('Found more than one match');
+  }
+  return matches[0];
+}
+
+/**
  * Standard map higher order function.
  */
 export function map(list, transform) {
@@ -159,6 +170,18 @@ export function isString(val) {
 
 export function isObject(val) {
   return typeof val === 'object' && !isNull(val);
+}
+
+// Based on https://github.com/jonschlinkert/is-plain-object/blob/master/index.js by jonschlinkert.
+export function isPlainObject(o) {
+  var isObjectObject = o => isObject(o) && Object.prototype.toString.call(o) === '[object Object]';
+  if (isObjectObject === false) return false;
+  var ctor = o.constructor;
+  if (typeof ctor !== 'function') return false;
+  var prot = ctor.prototype;
+  if (isObjectObject(prot) === false) return false;
+  if (prot.hasOwnProperty('isPrototypeOf') === false) return false;
+  return true;
 }
 
 export function isFunction(val) {

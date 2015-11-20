@@ -4,6 +4,7 @@ import QueryCache from '../filter_sets/QueryCache';
 import QueryCombiner from '../filter_sets/QueryCombiner';
 import ResourceLinker from '../filter_sets/ResourceLinker';
 import * as Utils from '../core/Utils';
+
 // import Query from '../core/Query';
 // import Response from '../core/Response'
 // import Resource from '../core/Resource';
@@ -154,11 +155,15 @@ describe('Optic Integration Tests', function() {
     expect(doneFn.calls.count()).toEqual(1);
     expect(jasmine.Ajax.requests.count()).toEqual(1);
 
+    console.log('**** START ****');
+
     // An identical query should not fire another ajax request.
     Resource1.fetch().params({id: 5}).submit(doneFn, updateFn);
     expect(updateFn.calls.count()).toEqual(4);
     expect(doneFn.calls.count()).toEqual(2);
     expect(jasmine.Ajax.requests.count()).toEqual(1);
+
+    console.log('**** END ****');
 
     // This query has different params so a new ajax request should be sent.
     Resource1.fetch().params({id: 6}).submit(doneFn, updateFn);
