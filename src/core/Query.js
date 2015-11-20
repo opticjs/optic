@@ -222,6 +222,7 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
 });
 
 Query.defaultProps = {
+  name: null,
   action: null,
   params: {},
   data: {},
