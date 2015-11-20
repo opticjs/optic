@@ -24,16 +24,12 @@ export default FilterSet.extend('QueryCombiner', {
           var bucket = this._queryBuckets.get(query);
 
           if (bucket) {
-	    console.log('***************');
-	    console.log(bucket);
             bucket.callbacks.push({
               query: query,
               emitResponse: emitResponse,
               cb: cb
             });
           } else {
-	    console.log('###############');
-	    console.log(query);
             this._queryBuckets.set(query, {
               originalQuery: query,
               callbacks: []

@@ -28,7 +28,6 @@ var RateLimitRetry = FilterSet.extend('RateLimitRetry', {
               setTimeout(() => {
                 setTimeout(() => {
                   if (!filter._queryRetryBlacklist.has(query)) {
-                    console.log(`retrying attempt #${filter._retryCounts.get(query) || 0}`);
                     cb(Query.States.SUBMITTING);
                   } else {
                     cb();

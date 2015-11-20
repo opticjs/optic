@@ -10,19 +10,14 @@ export default class HashMap {
   }
   
   get(key) {
-    console.log('requesting ' + hashKey(stringify(key)));
     var bucket = this._buckets[hashKey(key)];
     if (bucket) {
       let hi = this._findNodeInBucket(bucket, key);
-      console.log('bucket found', bucket, key);
-      console.log(hi && hi.val);
       return (hi || {}).val;
     }
   }
 
   has(key) {
-    // console.log('has: ' + stringify(key));
-    // console.log(hashKey(key));
     return !Utils.isUndefined(this.get(key));
   }
 
@@ -43,14 +38,9 @@ export default class HashMap {
     if (!node) {
       node = {key: key, val: val};
       bucket.push(node);
-      console.log('pushed ' + hashKey(stringify(key)));
     } else {
       node.val = val;
     }
-
-    // console.log(`set ${stringify(key)} to ${val}`);
-    // console.log(this._buckets);
-    // console.log(this._equals);
   }
 
   remove(key) {
@@ -65,7 +55,6 @@ export default class HashMap {
   }
 
   _findNodeInBucket(bucket, key) {
-    console.log('finding in bucket', bucket, key);
     return Utils.find(bucket, node => this._equals(node.key, key));
   }
 }

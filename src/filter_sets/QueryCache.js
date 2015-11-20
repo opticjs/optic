@@ -20,8 +20,6 @@ export default FilterSet.extend('QueryCache', {
         filter: (query, emitResponse, cb) => {
 	  this._responses.has(query);
           var response = this._responses.get(query);
-	  console.log('response');
-	  console.log(response);
 
           if (response) {
             emitResponse(response);
@@ -37,11 +35,7 @@ export default FilterSet.extend('QueryCache', {
         filter: (query, emitResponse, cb) => {
           var response = query.getFinalResponse();
 
-	  // console.log('sup');
-	  // console.log(!this._responses.has(query) && response);
-
           if (!this._responses.has(query) && response) {
-	    console.log('setting now');
             this._responses.set(query, response);
           }
 
