@@ -228,6 +228,9 @@ describe('Optic Integration Tests', function() {
     });
 
     // The resulting resources should be triple equal to each other
+    console.log('gonna fail');
+    console.log(collectionDoneFn.calls.mostRecent().args[0].data[0]);
+    console.log(resourceDoneFn.calls.mostRecent().args[0].data);
     expect(collectionDoneFn.calls.mostRecent().args[0].data[0] ===
         resourceDoneFn.calls.mostRecent().args[0].data).toBe(true);
   });

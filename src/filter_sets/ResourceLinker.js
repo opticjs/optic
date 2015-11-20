@@ -1,4 +1,6 @@
+import deepEqual from '../core/deepEquals';
 import FilterSet from '../core/FilterSet';
+import HashMap from '../structs/HashMap';
 import Resource from '../core/Resource';
 import * as Utils from '../core/Utils';
 
@@ -9,7 +11,7 @@ import * as Utils from '../core/Utils';
 export default FilterSet.extend('ResourceLinker', {
   init() {
     this._refTimeout = 60 * 1000;
-    this._resourceRefs = {};
+    this._resourceRefs = new HashMap(deepEqual);
   },
 
   responseFilters() {
@@ -23,14 +25,13 @@ export default FilterSet.extend('ResourceLinker', {
         // A function that takes in a resource and returns the linked resource if the ref
         // exists and is not expired.
         const fetchResourceRef = resource => {
-          var resourceKey = resource.toString(true);
-          var ref = this._resourceRefs[resourceKey];
+          var ref = this._resourceRefs.get(resource);
           var now = new Date().getTime();
 
           if (ref) {
             if (ref.timestamp + this._refTimeout < now) {
               // If the ref is expired, then invalidate it.
-              delete this._resourceRefs[resourceKey];
+	      this._resourceRefs.remove(resource);
             } else {
               // Otherwise return the ref instead of the original resource.
               resource = ref.resource;
@@ -38,11 +39,11 @@ export default FilterSet.extend('ResourceLinker', {
           }
 
           // Add the resource to the _resourceRefs map of refs if it's not there.
-          if (!this._resourceRefs[resourceKey]) {
-            this._resourceRefs[resourceKey] = {
+          if (!this._resourceRefs.has(resource)) {
+            this._resourceRefs.set(resource, {
               timestamp: now,
               resource: resource
-            };
+            });
           }
 
           return resource;
