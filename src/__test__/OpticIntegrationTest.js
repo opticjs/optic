@@ -170,6 +170,35 @@ describe('Optic Integration Tests', function() {
     expect(doneFn.calls.count()).toEqual(3);
   });
 
+  it('should invalidate QueryCache entries with the queryCacheDep method', function() {
+    var doneFn = jasmine.createSpy('success');
+    var updateFn = jasmine.createSpy('update');
+    Resource1 = getResource({queryCache: queryCache});
+
+    // Initial query. Should fire an ajax request.
+    Resource1.fetch().params({id: 5}).queryCacheDeps('update_query').submit(doneFn, updateFn);
+    jasmine.Ajax.requests.mostRecent().respondWith({status: 200, responseText: '{}'});
+    expect(updateFn.calls.count()).toEqual(2);
+    expect(doneFn.calls.count()).toEqual(1);
+    expect(jasmine.Ajax.requests.count()).toEqual(1);
+
+    // An identical query should not fire another ajax request.
+    Resource1.fetch().params({id: 5}).queryCacheDeps('update_query').submit(doneFn, updateFn);
+
+    expect(updateFn.calls.count()).toEqual(4);
+    expect(doneFn.calls.count()).toEqual(2);
+    expect(jasmine.Ajax.requests.count()).toEqual(1);
+
+    // This query should invalidate the previous one
+    Resource1.update().id('update_query').submit();
+
+    // Fires an ajax request because it was invalidated.
+    Resource1.fetch().params({id: 5}).queryCacheDeps('update_query').submit(doneFn, updateFn);
+    expect(updateFn.calls.count()).toEqual(6);
+    expect(doneFn.calls.count()).toEqual(3);
+    expect(jasmine.Ajax.requests.count()).toEqual(2);
+  });
+
   it('should do basic query combining with QueryCombiner', function() {
     var doneFn1 = jasmine.createSpy('success');
     var doneFn2 = jasmine.createSpy('success');

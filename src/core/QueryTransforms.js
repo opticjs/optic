@@ -13,6 +13,13 @@ export function parent(query, parent) {
   return query;
 }
 
+export function id(query, id) {
+  query.setProps({
+    id: id
+  });
+  return query;
+}
+
 export function params(query, params) {
   query.setProps({
     params: params
