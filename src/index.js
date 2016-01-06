@@ -5,6 +5,7 @@ import HttpAdapter from './adapters/HttpAdapter';
 import Query from './core/Query';
 import Resource from './core/Resource';
 import Response from './core/Response';
+import OpticObject from './core/OpticObject';
 import * as Utils from './core/Utils';
 import QueryCache from './filter_sets/QueryCache';
 import QueryCombiner from './filter_sets/QueryCombiner';
@@ -19,6 +20,7 @@ export default {
   HttpAdapter: HttpAdapter,
   Utils: Utils,
   FilterSet: FilterSet,
+  OpticObject: OpticObject,
   FilterSets: {
     QueryCache: QueryCache,
     QueryCombiner: QueryCombiner,
