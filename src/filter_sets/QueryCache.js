@@ -2,6 +2,7 @@ import deepEqual from '../core/deepEquals';
 import FilterSet from '../core/FilterSet';
 import HashMap from '../structs/HashMap';
 import Query from '../core/Query';
+import Adapter from '../core/Adapter';
 import * as Utils from '../core/Utils';
 
 /**
@@ -40,7 +41,8 @@ export default FilterSet.extend('QueryCache', {
         filter: (query, emitResponse, cb) => {
           var response = query.getFinalResponse();
  
-          if (!this._responses.has(query) && response) {
+          if (query.getAction() === Adapter.Actions.FETCH && !this._responses.has(query) &&
+              response) {
             this._responses.set(query, response);
 
             // Invalidate queries that depend on this one
