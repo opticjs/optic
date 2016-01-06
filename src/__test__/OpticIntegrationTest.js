@@ -171,7 +171,7 @@ describe('Optic Integration Tests', function() {
     expect(doneFn.calls.count()).toEqual(3);
   });
 
-  it('should invalidate QueryCache entries with the queryCacheDep method', function() {
+  it('should invalidate QueryCache entries with the queryCacheDeps method', function() {
     var doneFn = jasmine.createSpy('success');
     var updateFn = jasmine.createSpy('update');
     Resource1 = getResource({queryCache: queryCache});
