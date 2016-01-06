@@ -102,7 +102,7 @@ export function extend(obj, ...extensions) {
 }
 
 export function merge(objects) {
-  return extend.apply(objects[0], objects.slice(1));
+  return extend.apply(null, objects[0], objects.slice(1));
 }
 
 export function contains(list, val) {
