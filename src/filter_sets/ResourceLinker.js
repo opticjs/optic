@@ -31,7 +31,7 @@ export default FilterSet.extend('ResourceLinker', {
           if (ref) {
             if (ref.timestamp + this._refTimeout < now) {
               // If the ref is expired, then invalidate it.
-	      this._resourceRefs.remove(resource);
+              this._resourceRefs.remove(resource);
             } else {
               // Otherwise return the ref instead of the original resource.
               resource = ref.resource;

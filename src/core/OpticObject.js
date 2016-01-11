@@ -96,19 +96,19 @@ var extend = function(className, props, statics) {
   NewClass.prototype.props = function() {
     function tap(o) {
       if (Utils.isArray(o)) {
-	return Utils.map(o, item => tap(item));
+        return Utils.map(o, item => tap(item));
       } else if (Utils.isObject(o)) {
-	if (o instanceof OpticObject.Source) {
-	  return tap(o.get());
-	}
+        if (o instanceof OpticObject.Source) {
+          return tap(o.get());
+        }
 
-	if (Utils.isPlainObject(o)) {
-	  return Utils.reduce(Utils.keys(o), (memo, key) => Utils.extend(memo, {[key]: tap(o[key])}), {});
-	} else {
-	  return o;
-	}
+        if (Utils.isPlainObject(o)) {
+          return Utils.reduce(Utils.keys(o), (memo, key) => Utils.extend(memo, {[key]: tap(o[key])}), {});
+        } else {
+          return o;
+        }
       } else {
-	return o;
+        return o;
       }
     }
 
