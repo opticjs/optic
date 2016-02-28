@@ -8,6 +8,7 @@ auto-save-list
 tramp
 .\#*
 
+.idea
 ./build
 node_modules
 tmp
