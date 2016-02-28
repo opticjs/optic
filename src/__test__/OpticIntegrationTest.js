@@ -171,7 +171,7 @@ describe('Optic Integration Tests', function() {
     expect(doneFn.calls.count()).toEqual(3);
   });
 
-  it('should invalidate QueryCache entries with the queryCacheDep method', function() {
+  it('should invalidate QueryCache entries with the queryCacheDeps method', function() {
     var doneFn = jasmine.createSpy('success');
     var updateFn = jasmine.createSpy('update');
     Resource1 = getResource({queryCache: queryCache});
@@ -258,7 +258,19 @@ describe('Optic Integration Tests', function() {
     });
 
     // The resulting resources should be triple equal to each other
-    expect(collectionDoneFn.calls.mostRecent().args[0].data[0] ===
-        resourceDoneFn.calls.mostRecent().args[0].data).toBe(true);
+    var result1 = resourceDoneFn.calls.mostRecent().args[0].data;
+    expect(collectionDoneFn.calls.mostRecent().args[0].data[0] === result1).toBe(true);
+
+    // Request a separate resource and this one should not be === equals, since it's not even
+    // logically equal. Just a sanity check that ResourceLinker doesn't have any false positives.
+    Resource1.fetch().params({'id': 'foodbar'}).submit(resourceDoneFn);
+    jasmine.Ajax.requests.mostRecent().respondWith({
+      status: 200,
+      contentType: 'application/json',
+      responseText: `{"id": "foodbar", "title": "sup"}`
+    });
+    var result2 = resourceDoneFn.calls.mostRecent().args[0].data;
+    expect(result1 === result2).toBe(false);
+    expect(result2.get('title')).toEqual('sup');
   });
 });

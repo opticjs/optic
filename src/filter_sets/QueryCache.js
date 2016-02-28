@@ -2,6 +2,7 @@ import deepEqual from '../core/deepEquals';
 import FilterSet from '../core/FilterSet';
 import HashMap from '../structs/HashMap';
 import Query from '../core/Query';
+import Adapter from '../core/Adapter';
 import * as Utils from '../core/Utils';
 
 /**
@@ -20,7 +21,7 @@ export default FilterSet.extend('QueryCache', {
         from: Query.States.IDLE,
         to: Query.States.SUBMITTING,
         filter: (query, emitResponse, cb) => {
-	  this._responses.has(query);
+          this._responses.has(query);
           var response = this._responses.get(query);
 
           if (response) {
@@ -40,23 +41,24 @@ export default FilterSet.extend('QueryCache', {
         filter: (query, emitResponse, cb) => {
           var response = query.getFinalResponse();
  
-          if (!this._responses.has(query) && response) {
+          if (query.getAction() === Adapter.Actions.FETCH && !this._responses.has(query) &&
+              response) {
             this._responses.set(query, response);
 
-	    // Invalidate queries that depend on this one
-	    if (this._invalidations[query.props().id]) {
-	      Utils.each(this._invalidations[query.props().id], q => {
-		this._responses.remove(q);
-		this._invalidations[query.props().id] = Utils.without(
-		  this._invalidations[query.props().id], q);
-		if (this._invalidations[query.props().id].length === 0) {
-		  delete this._invalidations[query.props().id];
-		}
-	      });
-	      filter.props().invalidationFn && filter.props().invalidationFn(query,
-		this._invalidations[query.props().id]);
-	    }
-	  }
+            // Invalidate queries that depend on this one
+            if (this._invalidations[query.props().id]) {
+              Utils.each(this._invalidations[query.props().id], q => {
+                this._responses.remove(q);
+                this._invalidations[query.props().id] = Utils.without(
+                    this._invalidations[query.props().id], q);
+                if (this._invalidations[query.props().id].length === 0) {
+                  delete this._invalidations[query.props().id];
+                }
+              });
+              filter.props().invalidationFn && filter.props().invalidationFn(query,
+                  this._invalidations[query.props().id]);
+            }
+          }
 
           cb();
         }
@@ -69,18 +71,18 @@ export default FilterSet.extend('QueryCache', {
 
     return {
       onQueryCacheInvalidate: function(invalidator) {
-	filter.setProps({invalidationFn: invalidator});
-	return this;
+        filter.setProps({invalidationFn: invalidator});
+        return this;
       },
 
       queryCacheDeps: function(ids = []) {
-	if (!Utils.isArray(ids)) {
-	  ids = [ids];
-	}
-	Utils.each(ids, id => {
-	  filter._invalidations[id] = Utils.union((filter._invalidations[id]) || [], [this]);
-	});
-	return this;
+        if (!Utils.isArray(ids)) {
+          ids = [ids];
+        }
+        Utils.each(ids, id => {
+          filter._invalidations[id] = Utils.union((filter._invalidations[id]) || [], [this]);
+        });
+        return this;
       }
     };
   }

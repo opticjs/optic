@@ -12,7 +12,6 @@ var pSlice = Array.prototype.slice;
 var isArguments;
 
 export default function deepEqual(actual, expected, opts) {
-  console.log('deep equals?', actual, expected);
   if (!opts) opts = {};
 
   // Expand and verify OpticObject Sources
