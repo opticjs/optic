@@ -25,6 +25,10 @@ var Resource = OpticObject.extend('Resource', {
     } else {
       return this._super();
     }
+  },
+
+  toJSON() {
+    return this._attributes;
   }
 });
 

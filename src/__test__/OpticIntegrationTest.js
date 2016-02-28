@@ -112,6 +112,7 @@ describe('Optic Integration Tests', function() {
     expect(response.isProvisional()).toBe(false);
     expect(response.data.get('food')).toEqual('bar');
     expect(response.data.sampleInstanceMethod()).toEqual('hello');
+    expect(response.data.toJSON().food).toEqual('bar');
   });
 
   it('should fetch a list of resources from an HTTP endpoint', function() {
