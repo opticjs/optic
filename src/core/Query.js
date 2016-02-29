@@ -82,7 +82,7 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
         }
       });
 
-      if (finalResponse) {
+      if (finalResponse && this._onQueryComplete) {
         // We're done!
         this._onQueryComplete(finalResponse);
       }
@@ -150,7 +150,7 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
 
     return {
       inbound: getFilters(filterSet => filterSet.getInboundFilters()),
-      outbound: getFilters(filterSet => filterSet.getOutboundFilters()),
+      outbound: getFilters(filterSet => filterSet.getOutboundFilters())
     };
   },
 
@@ -210,7 +210,7 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
       // If there's no response then we cancel the query. Otherwise, save the response and
       // invoke the update callback if it's available.
       if (!response) {
-        startStateTransitionTo(this, States.CANCELED, this._finalQueryCallbactar);
+        startStateTransitionTo(this, States.CANCELED, this._finalQueryCallback);
       } else {
         this._responses.push(response);
         this._onQueryUpdate && this._onQueryUpdate(response);
@@ -222,7 +222,7 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
 });
 
 Query.defaultProps = {
-  name: null,
+  key: null,
   action: null,
   params: {},
   data: {},

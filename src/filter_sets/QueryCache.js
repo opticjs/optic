@@ -44,20 +44,24 @@ export default FilterSet.extend('QueryCache', {
           if (query.getAction() === Adapter.Actions.FETCH && !this._responses.has(query) &&
               response) {
             this._responses.set(query, response);
+          }
 
-            // Invalidate queries that depend on this one
-            if (this._invalidations[query.props().id]) {
-              Utils.each(this._invalidations[query.props().id], q => {
-                this._responses.remove(q);
-                this._invalidations[query.props().id] = Utils.without(
-                    this._invalidations[query.props().id], q);
-                if (this._invalidations[query.props().id].length === 0) {
-                  delete this._invalidations[query.props().id];
-                }
-              });
-              filter.props().invalidationFn && filter.props().invalidationFn(query,
-                  this._invalidations[query.props().id]);
-            }
+
+          // Invalidate queries that depend on this one
+          if (this._invalidations[query.props().key]) {
+            Utils.each(this._invalidations[query.props().key], q => {
+              this._responses.remove(q);
+              this._invalidations[query.props().key] = Utils.without(
+                  this._invalidations[query.props().key], q);
+              if (this._invalidations[query.props().key].length === 0) {
+                delete this._invalidations[query.props().key];
+              }
+              // Call the invalidation function to let each query know that it has been
+              // invalidated.
+              if (q.props().invalidationFn) {
+                q.props().invalidationFn(query);
+              }
+            });
           }
 
           cb();
@@ -71,16 +75,16 @@ export default FilterSet.extend('QueryCache', {
 
     return {
       onQueryCacheInvalidate: function(invalidator) {
-        filter.setProps({invalidationFn: invalidator});
+        this.setProps({invalidationFn: invalidator});
         return this;
       },
 
-      queryCacheDeps: function(ids = []) {
-        if (!Utils.isArray(ids)) {
-          ids = [ids];
+      queryCacheDeps: function(keys = []) {
+        if (!Utils.isArray(keys)) {
+          keys = [keys];
         }
-        Utils.each(ids, id => {
-          filter._invalidations[id] = Utils.union((filter._invalidations[id]) || [], [this]);
+        Utils.each(keys, key => {
+          filter._invalidations[key] = Utils.union(filter._invalidations[key] || [], [this]);
         });
         return this;
       }

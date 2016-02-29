@@ -13,9 +13,9 @@ export function parent(query, parent) {
   return query;
 }
 
-export function id(query, id) {
+export function key(query, key) {
   query.setProps({
-    id: id
+    key: key
   });
   return query;
 }
