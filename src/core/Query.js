@@ -199,7 +199,7 @@ const Query = OpticObject.extend('Query', Utils.extend(getQueryTransforms(), {
     var processResponseFilters = (filters, callback) => {
       if (filters.length > 0) {
         processResponseFilters(filters.slice(1), response => {
-          filters[0](response, callback);
+          filters[0](response, this, callback);
         });
       } else {
         callback(response);

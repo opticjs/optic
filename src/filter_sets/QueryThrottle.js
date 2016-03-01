@@ -36,7 +36,7 @@ var QueryThrottle = FilterSet.extend('QueryThrottle', {
 
   responseFilters() {
     return [
-      (response, callback) => {
+      (response, query, callback) => {
         if (this.props().allowOutdatedResponses || !response.requestedAt ||
             response.requestedAt >= this._latestRequestedAt) {
           this._latestRequestedAt = response.requestedAt;

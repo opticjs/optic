@@ -16,7 +16,7 @@ export default FilterSet.extend('ResourceLinker', {
 
   responseFilters() {
     return [
-      (response, callback) => {
+      (response, query, callback) => {
         if (!response.data) {
           callback(response);
           return;
