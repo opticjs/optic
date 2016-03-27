@@ -172,6 +172,10 @@ export function isObject(val) {
   return typeof val === 'object' && !isNull(val);
 }
 
+export var isArray = Array.isArray || function(obj) {
+  return Object.prototype.toString.call(obj) === '[object Array]';
+};
+
 // Based on https://github.com/jonschlinkert/is-plain-object/blob/master/index.js by jonschlinkert.
 export function isPlainObject(o) {
   var isObjectObject = o => isObject(o) && Object.prototype.toString.call(o) === '[object Object]';

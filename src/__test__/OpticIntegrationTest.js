@@ -312,4 +312,15 @@ describe('Optic Integration Tests', function() {
     rsp = doneFn.calls.mostRecent().args[0];
     expect(rsp.data.get('food')).toEqual('car');
   });
+
+  it('should allow the request data to be an array', function() {
+    var doneFn = jasmine.createSpy('success');
+    var updateFn = jasmine.createSpy('update');
+    Resource1 = getResource();
+
+    // Initial query. Should fire an ajax request.
+    Resource1.create(['foo', 'bar']).params({id: 5}).submit(doneFn, updateFn);
+    jasmine.Ajax.requests.mostRecent().respondWith({status: 200, responseText: '{"foo": "bar"}'});
+    expect(jasmine.Ajax.requests.mostRecent().data()).toEqual(['foo', 'bar']);
+  });
 });
