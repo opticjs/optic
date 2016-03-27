@@ -13,6 +13,7 @@ import QueryCombiner from './filter_sets/QueryCombiner';
 import QueryThrottle from './filter_sets/QueryThrottle';
 import RateLimitRetry from './filter_sets/RateLimitRetry';
 import ResourceLinker from './filter_sets/ResourceLinker';
+import FetchMemory from './filter_sets/FetchMemory';
 import HashMap from './structs/HashMap';
 
 export default {
@@ -28,7 +29,8 @@ export default {
     QueryCombiner: QueryCombiner,
     QueryThrottle: QueryThrottle,
     RateLimitRetry: RateLimitRetry,
-    ResourceLinker: ResourceLinker
+    ResourceLinker: ResourceLinker,
+    FetchMemory: FetchMemory
   },
   Structs: {
     HashMap: HashMap

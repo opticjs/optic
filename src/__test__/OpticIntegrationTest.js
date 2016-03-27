@@ -3,11 +3,8 @@ import Optic from '../index';
 import QueryCache from '../filter_sets/QueryCache';
 import QueryCombiner from '../filter_sets/QueryCombiner';
 import ResourceLinker from '../filter_sets/ResourceLinker';
+import FetchMemory from '../filter_sets/FetchMemory';
 import * as Utils from '../core/Utils';
-
-// import Query from '../core/Query';
-// import Response from '../core/Response'
-// import Resource from '../core/Resource';
 
 
 /**
@@ -18,6 +15,7 @@ var Resource1;
 var queryCache;
 var queryCombiner;
 var resourceLinker;
+var fetchMemory;
 
 describe('Optic Integration Tests', function() {
   function getResource(options = {}) {
@@ -67,7 +65,8 @@ describe('Optic Integration Tests', function() {
         [new AuthFilterSet()],
         options.queryCache ? [options.queryCache] : [],
         options.queryCombiner ? [options.queryCombiner] : [],
-        options.resourceLinker ? [options.resourceLinker] : []
+        options.resourceLinker ? [options.resourceLinker] : [],
+        options.fetchMemory ? [options.fetchMemory] : []
       ),
 
       sampleInstanceMethod: function() {
@@ -83,6 +82,7 @@ describe('Optic Integration Tests', function() {
     queryCache = new QueryCache();
     queryCombiner = new QueryCombiner();
     resourceLinker = new ResourceLinker();
+    fetchMemory = new FetchMemory();
   });
 
   afterEach(function() {
@@ -281,5 +281,35 @@ describe('Optic Integration Tests', function() {
     var result2 = resourceDoneFn.calls.mostRecent().args[0].data;
     expect(result1 === result2).toBe(false);
     expect(result2.get('title')).toEqual('sup');
+  });
+
+  it('should remember fetch response data with FetchMemory', function() {
+    var doneFn = jasmine.createSpy('success');
+    var updateFn = jasmine.createSpy('update');
+    Resource1 = getResource({fetchMemory: fetchMemory});
+
+    // Initial query. Should fire an ajax request.
+    expect(updateFn.calls.count()).toEqual(0);
+    Resource1.fetch().params({id: 5}).submit(doneFn, updateFn);
+    expect(updateFn.calls.count()).toEqual(1);
+    jasmine.Ajax.requests.mostRecent().respondWith({status: 200, responseText: '{"foo": "bar"}'});
+    expect(updateFn.calls.count()).toEqual(2);
+    expect(doneFn.calls.count()).toEqual(1);
+    expect(jasmine.Ajax.requests.count()).toEqual(1);
+
+    // An identical query should invoke the update function three times. One for the initial
+    // empty provisional response. Two for the FetchMemory update. Three for the final response.
+    Resource1.fetch().params({id: 5}).submit(doneFn, updateFn);
+    expect(updateFn.calls.count()).toEqual(4);
+    let rsp = updateFn.calls.mostRecent().args[0];
+    expect(rsp.isProvisional()).toBe(true);
+    expect(rsp.data.get('foo')).toEqual('bar');
+    expect(doneFn.calls.count()).toEqual(1);
+    jasmine.Ajax.requests.mostRecent().respondWith({status: 200, responseText: '{"food": "car"}'});
+    expect(updateFn.calls.count()).toEqual(5);
+    expect(doneFn.calls.count()).toEqual(2);
+    expect(jasmine.Ajax.requests.count()).toEqual(2);
+    rsp = doneFn.calls.mostRecent().args[0];
+    expect(rsp.data.get('food')).toEqual('car');
   });
 });

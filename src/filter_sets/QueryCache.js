@@ -21,9 +21,7 @@ export default FilterSet.extend('QueryCache', {
         from: Query.States.IDLE,
         to: Query.States.SUBMITTING,
         filter: (query, emitResponse, cb) => {
-          this._responses.has(query);
           var response = this._responses.get(query);
-
           if (response) {
             emitResponse(response);
             cb(Query.States.DONE);
