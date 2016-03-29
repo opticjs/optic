@@ -41,7 +41,7 @@ export default function deepEqual(actual, expected, opts) {
   // Check for OpticObject equality.
   } else if (actual instanceof OpticObject && expected instanceof OpticObject) {
     return actual.constructor === expected.constructor &&
-      deepEqual(actual.untappedProps(), expected.untappedProps());
+      deepEqual(actual._untappedProps, expected._untappedProps);
 
   // If only one of the objects is an OpticObject then they are not equal.
   } else if (actual instanceof OpticObject ^ expected instanceof OpticObject) {

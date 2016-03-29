@@ -10,7 +10,7 @@ export default class OpticObject {}
 
 OpticObject.prototype.init = () => {};
 
-// Copied from http://ejohn.org/blog/simple-javascript-inheritance/
+// Mostly copied from http://ejohn.org/blog/simple-javascript-inheritance/
 var extend = function(className, props, statics) {
   var newPrototype = new this();
   var _super = this.prototype;
@@ -37,8 +37,8 @@ var extend = function(className, props, statics) {
   var NewClass = eval(`(
     function ${className}() {
       this._instanceId = Utils.uid();
-      this._props = {};
-      this.init && this.init.apply(this, arguments);
+      this.replaceProps({});
+      this.init.apply(this, arguments);
     }
   )`);
 
@@ -53,8 +53,24 @@ var extend = function(className, props, statics) {
   NewClass.prototype = Object.create(newPrototype);
   NewClass.prototype.constructor = NewClass;
 
-  NewClass.prototype.setProps = function(props) {
-    this._props = Utils.extend(this._props, props);
+  NewClass.prototype.setProps = function(newProps) {
+    var newPropsTapped = tap(newProps);
+    var keys = Object.keys(newProps);
+    var props = this.props;
+    var untapped = this._untappedProps;
+    var key;
+    for (var i = 0; i < keys.length; i++) {
+      key = keys[i];
+      untapped[key] = newProps[key];
+      props[key] = newPropsTapped[key];
+    }
+  };
+
+  NewClass.prototype.replaceProps = function(newProps) {
+    var defaults = this.constructor.defaultProps;
+    this._untappedProps = Object.create(defaults);
+    this.props = Object.create(tap(defaults));
+    this.setProps(newProps);
   };
 
   NewClass.prototype.toString = function() {
@@ -66,57 +82,31 @@ var extend = function(className, props, statics) {
       config.map = config.map || new WeakMap();
       config.count = Utils.isUndefined(config.count) ? 0 : config.count;
       if (Utils.isArray(o)) {
-	return Utils.map(o, item => rmCircularRefsAndStringify(item));
+        return Utils.map(o, item => rmCircularRefsAndStringify(item));
       } else if (Utils.isObject(o)) {
-	if (config.map.has(o)) {
-	  return `{ref: $${config.map.get(o)}}`;
-	} else {
-	  config.map.set(o, ++config.count);
-	}
+        if (config.map.has(o)) {
+          return `{ref: $${config.map.get(o)}}`;
+        } else {
+          config.map.set(o, ++config.count);
+        }
 
-	if (o instanceof OpticObject) {
-	  return rmCircularRefsAndStringify(o.props());
-	}
-
-	if (Utils.isPlainObject(o)) {
-	  return Utils.reduce(Utils.keys(o), (memo, key) =>
-	    Utils.extend(memo, {
-	      [key]: rmCircularRefsAndStringify(o[key])
-	    }), {});
-	} else {
-	  return Object.prototype.toString.call(o);
-	}
-      } else {
-	return o;
-      }
-    };
-    return JSON.stringify(rmCircularRefsAndStringify(this.props()));
-  };
-
-  NewClass.prototype.props = function() {
-    function tap(o) {
-      if (Utils.isArray(o)) {
-        return Utils.map(o, item => tap(item));
-      } else if (Utils.isObject(o)) {
-        if (o instanceof OpticObject.Source) {
-          return tap(o.get());
+        if (o instanceof OpticObject) {
+          return rmCircularRefsAndStringify(o.props);
         }
 
         if (Utils.isPlainObject(o)) {
-          return Utils.reduce(Utils.keys(o), (memo, key) => Utils.extend(memo, {[key]: tap(o[key])}), {});
+          return Utils.reduce(
+              Utils.keys(o),
+              (memo, key) => Utils.extend(memo, {[key]: rmCircularRefsAndStringify(o[key])}),
+              {});
         } else {
-          return o;
+          return Object.prototype.toString.call(o);
         }
       } else {
         return o;
       }
-    }
-
-    return Utils.extend(tap(this.constructor.defaultProps), tap(this._props));
-  };
-
-  NewClass.prototype.untappedProps = function() {
-    return Utils.extend(this.constructor.defaultProps, this._props);
+    };
+    return JSON.stringify(rmCircularRefsAndStringify(this.props));
   };
 
   NewClass.extend = extend;
@@ -138,6 +128,27 @@ class Source {
 
   get() {
     return this._getter();
+  }
+}
+
+function tap(o) {
+  if (Utils.isArray(o)) {
+    return Utils.map(o, item => tap(item));
+  } else if (Utils.isObject(o)) {
+    if (o instanceof Source) {
+      return tap(o.get());
+    }
+
+    if (Utils.isPlainObject(o)) {
+      return Utils.reduce(
+          Utils.keys(o),
+          (memo, key) => Utils.extend(memo, {[key]: tap(o[key])}),
+          {});
+    } else {
+      return o;
+    }
+  } else {
+    return o;
   }
 }
 

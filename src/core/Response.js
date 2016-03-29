@@ -19,9 +19,9 @@ var Response = OpticObject.extend('Response', {
   init(options = {}) {
     this.setProps(options);
 
-    this.status = this.props().status;
-    this.data = this.props().data;
-    this.params = this.props().params;
+    this.status = this.props.status;
+    this.data = this.props.data;
+    this.params = this.props.params;
   },
 
   /**

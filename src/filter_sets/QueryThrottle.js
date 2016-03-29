@@ -9,7 +9,7 @@ var QueryThrottle = FilterSet.extend('QueryThrottle', {
     this._latestRequestedAt = 0;
     this._throttled = throttle((fn) => {
       fn();
-    }, this.props().wait);
+    }, this.props.wait);
   },
 
   queryFilters() {
@@ -28,7 +28,7 @@ var QueryThrottle = FilterSet.extend('QueryThrottle', {
             if (!this._callbackTriggered) {
               cb(Query.States.CANCELED);
             }
-          }, this.props().wait + 100);
+          }, this.props.wait + 100);
         }
       }
     ];
@@ -37,7 +37,7 @@ var QueryThrottle = FilterSet.extend('QueryThrottle', {
   responseFilters() {
     return [
       (response, query, callback) => {
-        if (this.props().allowOutdatedResponses || !response.requestedAt ||
+        if (this.props.allowOutdatedResponses || !response.requestedAt ||
             response.requestedAt >= this._latestRequestedAt) {
           this._latestRequestedAt = response.requestedAt;
           callback(response);

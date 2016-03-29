@@ -32,7 +32,7 @@ var RateLimitRetry = FilterSet.extend('RateLimitRetry', {
                   } else {
                     cb();
                   }
-                }, filter.props().maxTurbulence * Math.random());
+                }, filter.props.maxTurbulence * Math.random());
               }, filter._retryDelayForQuery(query));
             } else {
               filter._queryRetryBlacklist.add(query);
@@ -61,18 +61,18 @@ var RateLimitRetry = FilterSet.extend('RateLimitRetry', {
       },
 
       withMaxTurbulence: function(turblence) {
-        filter.props().maxTurbulence = turblence;
+        filter.props.maxTurbulence = turblence;
         return this;
       }
     };
   },
 
   _retryLimitForQuery(query) {
-    return this._retryLimits.get(query) || this.props().retryLimit;
+    return this._retryLimits.get(query) || this.props.retryLimit;
   },
 
   _retryDelayForQuery(query) {
-    return this._retryDelays.get(query) || this.props().retryDelay;
+    return this._retryDelays.get(query) || this.props.retryDelay;
   }
 });
 
