@@ -135,7 +135,7 @@ export default class HttpRequest {
       if (this._computeContentType() === ContentTypes.json && Utils.isObject(fullData)) {
         return JSON.stringify(fullData);
       } else if (this._computeContentType() === ContentTypes.form && Utils.isObject(fullData)) {
-        return Utils.map(Utils.keys(fullData), key => key + '=' + fullData[key]).join('&');
+        return Utils.map(Utils.keys(fullData), key => key + '=' + encodeURIComponent(fullData[key])).join('&');
       } else {
         return fullData;
       }
