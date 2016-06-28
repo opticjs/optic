@@ -12,15 +12,15 @@ const resourceConfigDefaults = {
 
 var Resource = OpticObject.extend('Resource', {
   init(attributes) {
-    this.setProps({attributes: Utils.extend(this.props().attributes || {}, attributes)});
+    this.setProps({attributes: Utils.extend(this.props.attributes || {}, attributes)});
   },
 
   get(key) {
-    return this.props().attributes[key];
+    return this.props.attributes[key];
   },
 
   toJSON() {
-    return this.props().attributes;
+    return this.props.attributes;
   }
 });
 

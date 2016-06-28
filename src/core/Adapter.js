@@ -15,6 +15,6 @@ export default OpticObject.extend('Adapter', {
   },
 
   submit(query, callback) {
-    this[query.props().action](query, callback);
+    this[query.props.action](query, callback);
   }
 }, {Actions: Actions});

@@ -122,10 +122,15 @@ export default class HttpRequest {
   _computeDataString() {
     if (this._dataCalls.length > 0) {
       let fullData;
-      if (Utils.isObject(this._dataCalls[0])) {
-        // If the first data call is an object, we assume all of them are and merge all
-        // objects into one before encoding the data into a data string.
-        fullData = Utils.merge(this._dataCalls);
+      let last = Utils.last(this._dataCalls);
+      if (Utils.isObject(last)) {
+        if (!Utils.isArray(last)) {
+          // If the last data call is an object (but not an array), we assume all of them are and
+          // merge all objects into one before encoding the data into a data string.
+          fullData = Utils.merge(this._dataCalls);
+        } else {
+          fullData = last;
+        }
       } else {
         // Otherwise we join all data calls with an amperstand with the assumption that
         // they are parts of a form encoded data string, such as "key1=val1".

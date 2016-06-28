@@ -21,9 +21,7 @@ export default FilterSet.extend('QueryCache', {
         from: Query.States.IDLE,
         to: Query.States.SUBMITTING,
         filter: (query, emitResponse, cb) => {
-          this._responses.has(query);
           var response = this._responses.get(query);
-
           if (response) {
             emitResponse(response);
             cb(Query.States.DONE);
@@ -48,18 +46,18 @@ export default FilterSet.extend('QueryCache', {
 
 
           // Invalidate queries that depend on this one
-          if (this._invalidations[query.props().key]) {
-            Utils.each(this._invalidations[query.props().key], q => {
+          if (this._invalidations[query.props.key]) {
+            Utils.each(this._invalidations[query.props.key], q => {
               this._responses.remove(q);
-              this._invalidations[query.props().key] = Utils.without(
-                  this._invalidations[query.props().key], q);
-              if (this._invalidations[query.props().key].length === 0) {
-                delete this._invalidations[query.props().key];
+              this._invalidations[query.props.key] = Utils.without(
+                  this._invalidations[query.props.key], q);
+              if (this._invalidations[query.props.key].length === 0) {
+                delete this._invalidations[query.props.key];
               }
               // Call the invalidation function to let each query know that it has been
               // invalidated.
-              if (q.props().invalidationFn) {
-                q.props().invalidationFn(query);
+              if (q.props.invalidationFn) {
+                q.props.invalidationFn(query);
               }
             });
           }
