@@ -47,19 +47,25 @@ export default FilterSet.extend('QueryCache', {
 
           // Invalidate queries that depend on this one
           if (this._invalidations[query.props.key]) {
+            var qs = [];
             Utils.each(this._invalidations[query.props.key], q => {
               this._responses.remove(q);
+              qs.push(q);
               this._invalidations[query.props.key] = Utils.without(
                   this._invalidations[query.props.key], q);
               if (this._invalidations[query.props.key].length === 0) {
                 delete this._invalidations[query.props.key];
               }
-              // Call the invalidation function to let each query know that it has been
-              // invalidated.
+            });
+            
+            // Call the invalidation function to let each query know that it has been
+            // invalidated.
+            for (var i = 0; i < qs.length; i++) {
+              var q = qs[i];
               if (q.props.invalidationFn) {
                 q.props.invalidationFn(query);
               }
-            });
+            }
           }
 
           cb();
