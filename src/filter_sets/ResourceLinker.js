@@ -50,7 +50,6 @@ export default FilterSet.extend('ResourceLinker', {
         };
 
         // Detect resources from response
-        var resources = [];
         if (response.data instanceof Resource) {
           response.data = fetchResourceRef(response.data);
         } else if (Utils.isArrayOf(response.data, Resource)) {
